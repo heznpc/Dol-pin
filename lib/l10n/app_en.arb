@@ -1,0 +1,14 @@
+{
+  "@@locale": "en",
+  "appTitle": "dol-da",
+  "home": "Home",
+  "explore": "Explore",
+  "chat": "Chat",
+  "profile": "Profile",
+  "upcomingConcerts": "Upcoming Concerts",
+  "trendingItems": "Trending Items",
+  "nearbyItems": "Nearby Items",
+  "login": "Log in",
+  "signup": "Sign up",
+  "comingSoon": "Coming soon"
+}

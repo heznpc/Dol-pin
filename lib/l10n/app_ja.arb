@@ -1,0 +1,14 @@
+{
+  "@@locale": "ja",
+  "appTitle": "dol-da",
+  "home": "ホーム",
+  "explore": "探す",
+  "chat": "チャット",
+  "profile": "プロフィール",
+  "upcomingConcerts": "今後のコンサート",
+  "trendingItems": "人気アイテム",
+  "nearbyItems": "近くのアイテム",
+  "login": "ログイン",
+  "signup": "新規登録",
+  "comingSoon": "準備中"
+}
