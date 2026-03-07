@@ -79,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Spacer(flex: 2),
               Text(
-                'dol-da',
+                'dol-pin',
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: AppColors.primary,
                       fontSize: 40,
@@ -111,7 +111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ],
               const SizedBox(height: 16),
-              DoldaButton(
+              DolpinButton(
                 label: 'Continue with Phone',
                 isLoading: _isLoading,
                 onPressed: _sendOtp,

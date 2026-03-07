@@ -3,13 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
-class DoldaApp extends StatelessWidget {
-  const DoldaApp({super.key});
+class DolpinApp extends StatelessWidget {
+  const DolpinApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'dol-da',
+      title: 'dol-pin',
       theme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,

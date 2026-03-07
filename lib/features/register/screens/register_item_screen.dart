@@ -222,7 +222,7 @@ class _RegisterItemScreenState extends ConsumerState<RegisterItemScreen> {
               }).toList(),
             ),
             const SizedBox(height: 40),
-            DoldaButton(
+            DolpinButton(
               label: 'Register',
               isLoading: _isLoading,
               onPressed: _submit,

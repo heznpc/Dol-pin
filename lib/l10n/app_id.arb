@@ -1,14 +1,16 @@
 {
   "@@locale": "id",
-  "appTitle": "dol-da",
+  "appTitle": "dol-pin",
   "home": "Beranda",
   "explore": "Jelajahi",
   "chat": "Obrolan",
-  "profile": "Profil",
+  "profile": "my dol-pin",
   "upcomingConcerts": "Konser Mendatang",
   "trendingItems": "Item Populer",
   "nearbyItems": "Di Sekitar",
   "login": "Masuk",
   "signup": "Daftar",
-  "comingSoon": "Segera hadir"
+  "comingSoon": "Segera hadir",
+  "pinItem": "Pin",
+  "myPins": "Pin Saya"
 }

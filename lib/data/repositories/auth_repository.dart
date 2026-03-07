@@ -29,14 +29,14 @@ class AuthRepository {
   Future<bool> signInWithApple() async {
     return _client.auth.signInWithOAuth(
       OAuthProvider.apple,
-      redirectTo: 'com.dolda.app://callback',
+      redirectTo: 'com.dolpin.app://callback',
     );
   }
 
   Future<bool> signInWithGoogle() async {
     return _client.auth.signInWithOAuth(
       OAuthProvider.google,
-      redirectTo: 'com.dolda.app://callback',
+      redirectTo: 'com.dolpin.app://callback',
     );
   }
 

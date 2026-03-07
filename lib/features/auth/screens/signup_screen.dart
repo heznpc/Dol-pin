@@ -181,7 +181,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
             ],
             const SizedBox(height: 40),
-            DoldaButton(
+            DolpinButton(
               label: 'Get Started',
               isLoading: _isLoading,
               onPressed: _submit,

@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-class DoldaButton extends StatelessWidget {
-  const DoldaButton({
+class DolpinButton extends StatelessWidget {
+  const DolpinButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.isLoading = false,
-    this.variant = DoldaButtonVariant.primary,
+    this.variant = DolpinButtonVariant.primary,
     this.icon,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
-  final DoldaButtonVariant variant;
+  final DolpinButtonVariant variant;
   final IconData? icon;
 
   @override
@@ -23,11 +23,11 @@ class DoldaButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: switch (variant) {
-        DoldaButtonVariant.primary => ElevatedButton(
+        DolpinButtonVariant.primary => ElevatedButton(
             onPressed: isLoading ? null : onPressed,
             child: _buildChild(),
           ),
-        DoldaButtonVariant.outline => OutlinedButton(
+        DolpinButtonVariant.outline => OutlinedButton(
             onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.primary),
@@ -37,7 +37,7 @@ class DoldaButton extends StatelessWidget {
             ),
             child: _buildChild(),
           ),
-        DoldaButtonVariant.text => TextButton(
+        DolpinButtonVariant.text => TextButton(
             onPressed: isLoading ? null : onPressed,
             child: _buildChild(),
           ),
@@ -67,4 +67,4 @@ class DoldaButton extends StatelessWidget {
   }
 }
 
-enum DoldaButtonVariant { primary, outline, text }
+enum DolpinButtonVariant { primary, outline, text }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-class DoldaCard extends StatelessWidget {
-  const DoldaCard({
+class DolpinCard extends StatelessWidget {
+  const DolpinCard({
     super.key,
     required this.child,
     this.onTap,

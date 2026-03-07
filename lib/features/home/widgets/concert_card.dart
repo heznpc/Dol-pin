@@ -17,7 +17,7 @@ class ConcertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DoldaCard(
+    return DolpinCard(
       onTap: onTap,
       padding: EdgeInsets.zero,
       child: Column(

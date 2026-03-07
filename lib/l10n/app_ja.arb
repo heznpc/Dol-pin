@@ -1,14 +1,16 @@
 {
   "@@locale": "ja",
-  "appTitle": "dol-da",
+  "appTitle": "dol-pin",
   "home": "ホーム",
   "explore": "探す",
   "chat": "チャット",
-  "profile": "プロフィール",
+  "profile": "my dol-pin",
   "upcomingConcerts": "今後のコンサート",
   "trendingItems": "人気アイテム",
   "nearbyItems": "近くのアイテム",
   "login": "ログイン",
   "signup": "新規登録",
-  "comingSoon": "準備中"
+  "comingSoon": "準備中",
+  "pinItem": "ピンする",
+  "myPins": "マイピン"
 }

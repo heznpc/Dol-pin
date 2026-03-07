@@ -1,14 +1,16 @@
 {
   "@@locale": "ko",
-  "appTitle": "돌다",
+  "appTitle": "돌핀",
   "home": "홈",
   "explore": "탐색",
   "chat": "채팅",
-  "profile": "프로필",
+  "profile": "my 돌핀",
   "upcomingConcerts": "다가오는 콘서트",
   "trendingItems": "인기 아이템",
   "nearbyItems": "내 근처",
   "login": "로그인",
   "signup": "회원가입",
-  "comingSoon": "준비 중"
+  "comingSoon": "준비 중",
+  "pinItem": "핀하기",
+  "myPins": "내 핀"
 }

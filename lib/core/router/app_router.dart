@@ -124,7 +124,7 @@ class MainShell extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.pushNamed('registerItem'),
         backgroundColor: const Color(0xFF6C5CE7),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.push_pin),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _indexFromLocation(location),
@@ -157,9 +157,9 @@ class MainShell extends StatelessWidget {
             label: 'Chat',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.bookmark_outline),
+            selectedIcon: Icon(Icons.bookmark),
+            label: 'my dol-pin',
           ),
         ],
       ),

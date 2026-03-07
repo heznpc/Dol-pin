@@ -170,7 +170,7 @@ class _ReservationScreenState extends ConsumerState<ReservationScreen> {
             const SizedBox(height: 24),
             const SafeBadge(label: 'Escrow Protected - Deposit refunded on return'),
             const SizedBox(height: 40),
-            DoldaButton(
+            DolpinButton(
               label: 'Proceed to Payment',
               isLoading: _isLoading,
               onPressed: _dateRange != null ? _proceed : null,

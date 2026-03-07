@@ -133,7 +133,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ),
             ],
             const SizedBox(height: 32),
-            DoldaButton(
+            DolpinButton(
               label: 'Verify',
               isLoading: _isLoading,
               onPressed: _otp.length == 6 ? _verify : null,

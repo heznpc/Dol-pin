@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerWidget {
           SliverAppBar(
             floating: true,
             title: Text(
-              'dol-da',
+              'dol-pin',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w900,

@@ -1,14 +1,16 @@
 {
   "@@locale": "en",
-  "appTitle": "dol-da",
+  "appTitle": "dol-pin",
   "home": "Home",
   "explore": "Explore",
   "chat": "Chat",
-  "profile": "Profile",
+  "profile": "my dol-pin",
   "upcomingConcerts": "Upcoming Concerts",
   "trendingItems": "Trending Items",
   "nearbyItems": "Nearby Items",
   "login": "Log in",
   "signup": "Sign up",
-  "comingSoon": "Coming soon"
+  "comingSoon": "Coming soon",
+  "pinItem": "Pin it",
+  "myPins": "My Pins"
 }

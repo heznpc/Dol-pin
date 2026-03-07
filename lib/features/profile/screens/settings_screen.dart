@@ -95,7 +95,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Center(
             child: Text(
-              'dol-da v0.1.0',
+              'dol-pin v0.1.0',
               style: TextStyle(color: AppColors.textHint, fontSize: 13),
             ),
           ),
