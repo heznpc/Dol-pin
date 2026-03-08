@@ -7,15 +7,19 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
-final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+/// Provides the current user ID from auth state (no DB call).
+final currentUserIdProvider = Provider<String?>((ref) {
   final authState = ref.watch(authStateProvider);
-  return authState.when(
-    data: (state) async {
-      final user = state.session?.user;
-      if (user == null) return null;
-      return ref.read(authRepositoryProvider).getProfile(user.id);
-    },
-    loading: () => null,
-    error: (_, _) => null,
+  return authState.valueOrNull?.session?.user.id;
+});
+
+/// Fetches the full user profile from DB when authenticated.
+final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+  final userId = ref.watch(currentUserIdProvider);
+  if (userId == null) return null;
+  final result = await ref.read(authRepositoryProvider).getProfile(userId);
+  return result.when(
+    success: (user) => user,
+    failure: (_) => null,
   );
 });

@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../shared/widgets/dolda_button.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/dolpin_button.dart';
 
 class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({super.key, required this.phone});
@@ -47,53 +48,58 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       _isLoading = true;
       _error = null;
     });
-    try {
-      final response = await ref
-          .read(authRepositoryProvider)
-          .verifyOtp(widget.phone, _otp);
 
-      if (!mounted) return;
+    final authRepo = ref.read(authRepositoryProvider);
+    final verifyResult = await authRepo.verifyOtp(widget.phone, _otp);
 
-      if (response.session != null) {
-        // Check if profile exists
-        final profile = await ref
-            .read(authRepositoryProvider)
-            .getProfile(response.user!.id);
-        if (profile == null && mounted) {
-          context.goNamed('signup');
-        } else if (mounted) {
-          context.go('/');
+    if (!mounted) return;
+
+    await verifyResult.when(
+      success: (response) async {
+        if (response.session != null) {
+          final profileResult = await authRepo.getProfile(response.user!.id);
+          if (!mounted) return;
+          profileResult.when(
+            success: (profile) {
+              if (profile == null) {
+                context.goNamed('signup');
+              } else {
+                context.go('/');
+              }
+            },
+            failure: (_) => context.goNamed('signup'),
+          );
         }
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _error = 'Invalid code. Please try again.');
+      },
+      failure: (_) {
+        setState(() => _error = AppLocalizations.of(context)!.invalidCode);
         for (final c in _controllers) {
           c.clear();
         }
         _focusNodes[0].requestFocus();
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+      },
+    );
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify')),
+      appBar: AppBar(title: Text(l.verify)),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Enter verification code',
+              l.enterVerificationCode,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Sent to ${widget.phone}',
+              l.sentTo(widget.phone),
               style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 32),
@@ -134,7 +140,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             ],
             const SizedBox(height: 32),
             DolpinButton(
-              label: 'Verify',
+              label: l.verify,
               isLoading: _isLoading,
               onPressed: _otp.length == 6 ? _verify : null,
             ),
@@ -147,11 +153,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       .signInWithOtp(widget.phone);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Code resent')),
+                      SnackBar(content: Text(l.codeResent)),
                     );
                   }
                 },
-                child: const Text('Resend code'),
+                child: Text(l.resendCode),
               ),
             ),
           ],

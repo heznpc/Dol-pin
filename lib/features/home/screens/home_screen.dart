@@ -2,24 +2,61 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/concert_provider.dart';
+import '../../../shared/widgets/error_view.dart';
+import '../../../shared/widgets/load_more_indicator.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../widgets/concert_card.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final concertsAsync = ref.watch(upcomingConcertsProvider(null));
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll - 200) {
+      ref
+          .read(paginatedUpcomingConcertsProvider(null).notifier)
+          .loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final concertsAsync =
+        ref.watch(paginatedUpcomingConcertsProvider(null));
 
     return SafeArea(
       child: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverAppBar(
             floating: true,
             title: Text(
-              'dol-pin',
+              l.appTitle,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w900,
@@ -28,30 +65,37 @@ class HomeScreen extends ConsumerWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.notifications_outlined),
-                onPressed: () {},
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(l.comingSoon)),
+                  );
+                },
               ),
             ],
           ),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 12),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Text(
-                'Upcoming Concerts',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                l.upcomingConcerts,
+                style: const TextStyle(
+                    fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
           ),
           concertsAsync.when(
-            data: (concerts) {
+            data: (paginatedState) {
+              final concerts = paginatedState.items;
               if (concerts.isEmpty) {
-                return const SliverToBoxAdapter(
+                return SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     child: Center(
                       child: Text(
-                        'No upcoming concerts found.\nCheck back later!',
+                        l.noUpcomingConcerts,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style:
+                            const TextStyle(color: AppColors.textSecondary),
                       ),
                     ),
                   ),
@@ -60,6 +104,9 @@ class HomeScreen extends ConsumerWidget {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
+                    if (index >= concerts.length) {
+                      return const LoadMoreIndicator();
+                    }
                     final concert = concerts[index];
                     return Padding(
                       padding: const EdgeInsets.symmetric(
@@ -73,29 +120,18 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     );
                   },
-                  childCount: concerts.length,
+                  childCount: concerts.length +
+                      (paginatedState.isLoadingMore ? 1 : 0),
                 ),
               );
             },
-            loading: () => const SliverToBoxAdapter(child: LoadingIndicator()),
+            loading: () =>
+                const SliverToBoxAdapter(child: LoadingIndicator()),
             error: (e, _) => SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  children: [
-                    const Icon(Icons.cloud_off, size: 48, color: AppColors.textHint),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Could not load concerts',
-                      style: TextStyle(color: AppColors.textSecondary),
-                    ),
-                    TextButton(
-                      onPressed: () =>
-                          ref.invalidate(upcomingConcertsProvider(null)),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
+              child: ErrorView(
+                message: l.couldNotLoadConcerts,
+                onRetry: () => ref.invalidate(
+                    paginatedUpcomingConcertsProvider(null)),
               ),
             ),
           ),

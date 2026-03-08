@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/cached_image.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
@@ -31,7 +33,7 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 4),
               child: Text(
-                DateFormatter.relative(timestamp),
+                DateFormatter.relative(timestamp, AppLocalizations.of(context)!),
                 style: const TextStyle(
                   color: AppColors.textHint,
                   fontSize: 10,
@@ -54,13 +56,10 @@ class MessageBubble extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (imageUrl != null) ...[
-                    ClipRRect(
+                    CachedImage(
+                      imageUrl: imageUrl!,
+                      width: 200,
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        imageUrl!,
-                        width: 200,
-                        fit: BoxFit.cover,
-                      ),
                     ),
                     if (message != null) const SizedBox(height: 6),
                   ],
@@ -107,7 +106,7 @@ class MessageBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 4),
               child: Text(
-                DateFormatter.relative(timestamp),
+                DateFormatter.relative(timestamp, AppLocalizations.of(context)!),
                 style: const TextStyle(
                   color: AppColors.textHint,
                   fontSize: 10,

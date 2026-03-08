@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/rental_item_model.dart';
+import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/dolpin_card.dart';
 import '../../../shared/widgets/safe_badge.dart';
 
 class RentalItemCard extends StatelessWidget {
@@ -17,92 +18,81 @@ class RentalItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return DolpinCard(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.divider, width: 0.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(16)),
-              child: AspectRatio(
-                aspectRatio: 1,
-                child: item.photos.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: item.photos.first,
-                        fit: BoxFit.cover,
-                        placeholder: (_, _) => Container(
-                          color: AppColors.surfaceLight,
-                        ),
-                      )
-                    : Container(
-                        color: AppColors.surfaceLight,
-                        child: const Icon(Icons.image, color: AppColors.textHint),
-                      ),
-              ),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(16)),
+            child: AspectRatio(
+              aspectRatio: 1,
+              child: item.photos.isNotEmpty
+                  ? CachedImage(imageUrl: item.photos.first)
+                  : Container(
+                      color: AppColors.surfaceLight,
+                      child:
+                          const Icon(Icons.image, color: AppColors.textHint),
+                    ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (item.btVerified)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Icon(
-                            Icons.bluetooth,
-                            size: 14,
-                            color: AppColors.verified,
-                          ),
-                        ),
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (item.btVerified)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 4),
+                        child: Icon(
+                          Icons.bluetooth,
+                          size: 14,
+                          color: AppColors.verified,
                         ),
                       ),
-                    ],
-                  ),
-                  if (item.vlmTag != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      item.vlmTag!,
-                      style: const TextStyle(
-                        color: AppColors.textHint,
-                        fontSize: 12,
+                    Expanded(
+                      child: Text(
+                        item.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 6),
+                ),
+                if (item.vlmTag != null) ...[
+                  const SizedBox(height: 2),
                   Text(
-                    '${CurrencyFormatter.format(item.dailyPrice, item.currency)}/day',
+                    item.vlmTag!,
                     style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
+                      color: AppColors.textHint,
+                      fontSize: 12,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  const SafeBadge(compact: true),
                 ],
-              ),
+                const SizedBox(height: 6),
+                Text(
+                  '${CurrencyFormatter.format(item.dailyPrice, item.currency)}/day',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const SafeBadge(compact: true),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CategoryChips extends StatelessWidget {
   const CategoryChips({
@@ -11,17 +12,18 @@ class CategoryChips extends StatelessWidget {
   final String? selected;
   final ValueChanged<String?> onSelected;
 
-  static const categories = [
-    ('all', 'All', Icons.apps),
-    ('lightstick', 'Lightstick', Icons.flashlight_on),
-    ('phone', 'Phone', Icons.phone_android),
-    ('camera', 'Camera', Icons.camera_alt),
-    ('slogan', 'Slogan', Icons.flag),
-    ('costume', 'Costume', Icons.checkroom),
+  static List<(String, String, IconData)> _categories(AppLocalizations l) => [
+    ('all', l.categoryAll, Icons.apps),
+    ('lightstick', l.categoryLightstick, Icons.flashlight_on),
+    ('phone', l.categoryPhone, Icons.phone_android),
+    ('camera', l.categoryCamera, Icons.camera_alt),
+    ('slogan', l.categorySlogan, Icons.flag),
+    ('costume', l.categoryCostume, Icons.checkroom),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final categories = _categories(AppLocalizations.of(context)!);
     return SizedBox(
       height: 40,
       child: ListView.separated(

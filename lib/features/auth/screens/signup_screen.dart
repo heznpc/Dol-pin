@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/locale_utils.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../shared/widgets/dolda_button.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/dolpin_button.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -19,11 +21,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _groupController = TextEditingController();
   bool _isLoading = false;
 
-  static const countries = [
-    ('KR', 'Korea'),
-    ('ID', 'Indonesia'),
-    ('JP', 'Japan'),
-    ('US', 'United States'),
+  static List<(String, String)> _countries(AppLocalizations l) => [
+    ('KR', l.countryKorea),
+    ('ID', l.countryIndonesia),
+    ('JP', l.countryJapan),
+    ('US', l.countryUS),
   ];
 
   @override
@@ -33,19 +35,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     super.dispose();
   }
 
-  String get _currencyForCountry => switch (_country) {
-        'KR' => 'KRW',
-        'ID' => 'IDR',
-        'JP' => 'JPY',
-        _ => 'USD',
-      };
-
-  String get _localeForCountry => switch (_country) {
-        'KR' => 'ko',
-        'ID' => 'id',
-        'JP' => 'ja',
-        _ => 'en',
-      };
+  String get _currencyForCountry => LocaleUtils.currencyForCountry(_country);
+  String get _localeForCountry => LocaleUtils.localeForCountry(_country);
 
   Future<void> _submit() async {
     final nickname = _nicknameController.text.trim();
@@ -56,32 +47,32 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (user == null) return;
 
     setState(() => _isLoading = true);
-    try {
-      await authRepo.createProfile({
-        'id': user.id,
-        'phone': user.phone ?? '',
-        'nickname': nickname,
-        'country': _country,
-        'currency': _currencyForCountry,
-        'locale': _localeForCountry,
-        'fav_groups': _favGroups,
-      });
-      if (mounted) context.go('/');
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+
+    final result = await authRepo.createProfile({
+      'id': user.id,
+      'phone': user.phone ?? '',
+      'nickname': nickname,
+      'country': _country,
+      'currency': _currencyForCountry,
+      'locale': _localeForCountry,
+      'fav_groups': _favGroups,
+    });
+
+    if (!mounted) return;
+    result.when(
+      success: (_) => context.go('/'),
+      failure: (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorPrefix(f.message))),
+      ),
+    );
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Profile')),
+      appBar: AppBar(title: Text(l.createProfile)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -120,23 +111,23 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
             const SizedBox(height: 32),
             Text(
-              'Nickname',
+              l.nickname,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _nicknameController,
-              decoration: const InputDecoration(hintText: 'Enter nickname'),
+              decoration: InputDecoration(hintText: l.enterNickname),
             ),
             const SizedBox(height: 24),
             Text(
-              'Country',
+              l.country,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: countries.map((c) {
+              children: _countries(l).map((c) {
                 final (code, name) = c;
                 return ChoiceChip(
                   label: Text(name),
@@ -148,14 +139,14 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Favorite Groups (optional)',
+              l.favoriteGroups,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             TextField(
               controller: _groupController,
-              decoration: const InputDecoration(
-                hintText: 'Type and press enter',
+              decoration: InputDecoration(
+                hintText: l.typeAndEnter,
               ),
               onSubmitted: (value) {
                 if (value.trim().isNotEmpty) {
@@ -182,7 +173,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ],
             const SizedBox(height: 40),
             DolpinButton(
-              label: 'Get Started',
+              label: l.getStarted,
               isLoading: _isLoading,
               onPressed: _submit,
             ),

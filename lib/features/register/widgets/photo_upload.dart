@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PhotoUpload extends StatelessWidget {
   const PhotoUpload({
@@ -17,14 +18,15 @@ class PhotoUpload extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Text(
-              'Photos',
-              style: TextStyle(
+            Text(
+              l.photos,
+              style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -32,7 +34,7 @@ class PhotoUpload extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              '${photos.length}/10 (min 2)',
+              l.photosCounter(photos.length),
               style: TextStyle(
                 fontSize: 13,
                 color: photos.length >= 2
@@ -61,15 +63,15 @@ class PhotoUpload extends StatelessWidget {
                       style: BorderStyle.solid,
                     ),
                   ),
-                  child: const Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.add_photo_alternate_outlined,
+                      const Icon(Icons.add_photo_alternate_outlined,
                           color: AppColors.textHint),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Add',
-                        style: TextStyle(
+                        l.add,
+                        style: const TextStyle(
                           color: AppColors.textHint,
                           fontSize: 12,
                         ),
@@ -122,9 +124,9 @@ class PhotoUpload extends StatelessWidget {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: const Text(
-                              'Cover',
-                              style: TextStyle(
+                            child: Text(
+                              l.cover,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,

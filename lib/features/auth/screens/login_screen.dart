@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
-import '../../../shared/widgets/dolda_button.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/dolpin_button.dart';
 import '../widgets/social_login_button.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -28,48 +29,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) return;
 
+    final phoneRegex = RegExp(r'^\+[1-9]\d{6,14}$');
+    if (!phoneRegex.hasMatch(phone)) {
+      setState(() => _error = AppLocalizations.of(context)!.invalidPhoneFormat);
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
-    try {
-      await ref.read(authRepositoryProvider).signInWithOtp(phone);
-      if (mounted) {
-        context.pushNamed('otp', queryParameters: {'phone': phone});
-      }
-    } catch (e) {
-      setState(() => _error = e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+
+    final result = await ref.read(authRepositoryProvider).signInWithOtp(phone);
+    if (!mounted) return;
+
+    result.when(
+      success: (_) => context.pushNamed('otp', queryParameters: {'phone': phone}),
+      failure: (f) => setState(() => _error = f.message),
+    );
+    setState(() => _isLoading = false);
   }
 
   Future<void> _signInWithApple() async {
-    try {
-      await ref.read(authRepositoryProvider).signInWithApple();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple sign in failed: $e')),
-        );
-      }
-    }
+    final result = await ref.read(authRepositoryProvider).signInWithApple();
+    if (!mounted) return;
+    result.when(
+      success: (_) {},
+      failure: (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${AppLocalizations.of(context)!.appleSignInFailed}: ${f.message}')),
+      ),
+    );
   }
 
   Future<void> _signInWithGoogle() async {
-    try {
-      await ref.read(authRepositoryProvider).signInWithGoogle();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Google sign in failed: $e')),
-        );
-      }
-    }
+    final result = await ref.read(authRepositoryProvider).signInWithGoogle();
+    if (!mounted) return;
+    result.when(
+      success: (_) {},
+      failure: (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${AppLocalizations.of(context)!.googleSignInFailed}: ${f.message}')),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -79,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const Spacer(flex: 2),
               Text(
-                'dol-pin',
+                l.appTitle,
                 style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: AppColors.primary,
                       fontSize: 40,
@@ -88,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Your concert, one tap away.\nSafe. Fast. Local.',
+                l.tagline,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                       height: 1.5,
@@ -98,9 +103,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  hintText: 'Phone number (+82...)',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                decoration: InputDecoration(
+                  hintText: l.phoneHint,
+                  prefixIcon: const Icon(Icons.phone_outlined),
                 ),
               ),
               if (_error != null) ...[
@@ -112,7 +117,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
               const SizedBox(height: 16),
               DolpinButton(
-                label: 'Continue with Phone',
+                label: l.continueWithPhone,
                 isLoading: _isLoading,
                 onPressed: _sendOtp,
               ),
@@ -123,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'or',
+                      l.or,
                       style: TextStyle(color: AppColors.textHint),
                     ),
                   ),
@@ -143,7 +148,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const Spacer(),
               Center(
                 child: Text(
-                  'By continuing, you agree to our Terms of Service',
+                  l.termsNotice,
                   style: Theme.of(context).textTheme.bodySmall,
                   textAlign: TextAlign.center,
                 ),

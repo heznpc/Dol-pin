@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../l10n/app_localizations.dart';
+import '../constants/app_colors.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/otp_screen.dart';
 import '../../features/auth/screens/signup_screen.dart';
@@ -13,9 +15,12 @@ import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/settings_screen.dart';
 import '../../features/profile/screens/my_rentals_screen.dart';
 import '../../features/register/screens/register_item_screen.dart';
+import '../../features/reservation/screens/reservation_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
+  // GoRouter redirect runs outside Riverpod scope, so direct Supabase
+  // access is acceptable here — this is the only allowed exception.
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final isAuth = session != null;
@@ -80,11 +85,19 @@ final appRouter = GoRouter(
       ),
     ),
     GoRoute(
+      path: '/reserve/:itemId',
+      name: 'reserve',
+      builder: (context, state) => ReservationScreen(
+        itemId: state.pathParameters['itemId']!,
+      ),
+    ),
+    GoRoute(
       path: '/chat/:userId',
       name: 'chatRoom',
       builder: (context, state) => ChatRoomScreen(
         otherUserId: state.pathParameters['userId']!,
         otherUserName: state.uri.queryParameters['name'] ?? 'User',
+        roomId: state.uri.queryParameters['roomId'] ?? '',
       ),
     ),
     GoRoute(
@@ -118,12 +131,13 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).uri.toString();
     return Scaffold(
       body: child,
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.pushNamed('registerItem'),
-        backgroundColor: const Color(0xFF6C5CE7),
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.push_pin),
       ),
       bottomNavigationBar: NavigationBar(
@@ -140,26 +154,26 @@ class MainShell extends StatelessWidget {
               context.goNamed('profile');
           }
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: l.home,
           ),
           NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search),
-            label: 'Explore',
+            icon: const Icon(Icons.search_outlined),
+            selectedIcon: const Icon(Icons.search),
+            label: l.explore,
           ),
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Chat',
+            icon: const Icon(Icons.chat_bubble_outline),
+            selectedIcon: const Icon(Icons.chat_bubble),
+            label: l.chat,
           ),
           NavigationDestination(
-            icon: Icon(Icons.bookmark_outline),
-            selectedIcon: Icon(Icons.bookmark),
-            label: 'my dol-pin',
+            icon: const Icon(Icons.bookmark_outline),
+            selectedIcon: const Icon(Icons.bookmark),
+            label: l.profile,
           ),
         ],
       ),

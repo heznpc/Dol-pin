@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class LenderBadge extends StatelessWidget {
   const LenderBadge({super.key, required this.grade});
@@ -7,10 +8,11 @@ class LenderBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final (color, icon, label) = switch (grade) {
-      'power' => (AppColors.primary, Icons.workspace_premium, 'Power Lender'),
-      'regular' => (AppColors.accent, Icons.verified, 'Regular Lender'),
-      _ => (AppColors.textHint, Icons.person_outline, 'New Member'),
+      'power' => (AppColors.primary, Icons.workspace_premium, l.powerLender),
+      'regular' => (AppColors.accent, Icons.verified, l.regularLender),
+      _ => (AppColors.textHint, Icons.person_outline, l.newMember),
     };
 
     return Container(

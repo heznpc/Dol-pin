@@ -2,14 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/chat_message_model.dart';
 import '../data/repositories/chat_repository.dart';
 
-final chatMessagesProvider = StreamProvider.family<List<ChatMessageModel>,
-    ({String userId, String otherUserId})>((ref, params) {
-  return ref
-      .watch(chatRepositoryProvider)
-      .watchMessages(params.userId, params.otherUserId);
+final chatRoomMessagesProvider = StreamProvider.autoDispose
+    .family<List<ChatMessageModel>, String>((ref, roomId) {
+  return ref.watch(chatRepositoryProvider).watchRoomMessages(roomId);
 });
 
-final chatListProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, userId) {
-  return ref.watch(chatRepositoryProvider).getChatList(userId);
+final chatListProvider = FutureProvider.autoDispose
+    .family<List<Map<String, dynamic>>, String>((ref, userId) async {
+  final result = await ref.watch(chatRepositoryProvider).getChatList(userId);
+  return result.when(
+    success: (list) => list,
+    failure: (f) => throw f,
+  );
 });

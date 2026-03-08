@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ConditionSelector extends StatelessWidget {
   const ConditionSelector({
@@ -11,17 +12,18 @@ class ConditionSelector extends StatelessWidget {
   final String grade;
   final ValueChanged<String> onChanged;
 
-  static const grades = [
-    ('S', 'Like New', 'No signs of use'),
-    ('A', 'Excellent', 'Minor signs of use'),
-    ('B', 'Good', 'Visible wear but functional'),
-    ('C', 'Fair', 'Significant wear'),
+  static List<(String, String, String)> _grades(AppLocalizations l) => [
+    ('S', l.conditionS, l.conditionSDesc),
+    ('A', l.conditionA, l.conditionADesc),
+    ('B', l.conditionB, l.conditionBDesc),
+    ('C', l.conditionC, l.conditionCDesc),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Column(
-      children: grades.map((g) {
+      children: _grades(l).map((g) {
         final (value, label, desc) = g;
         final isSelected = grade == value;
         return GestureDetector(

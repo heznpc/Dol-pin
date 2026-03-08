@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class ReportDialog extends StatefulWidget {
   const ReportDialog({super.key, required this.targetName});
@@ -21,11 +22,11 @@ class _ReportDialogState extends State<ReportDialog> {
   String? _reason;
   final _descController = TextEditingController();
 
-  static const reasons = [
-    ('scam', 'Scam / Fraud'),
-    ('counterfeit', 'Counterfeit Item'),
-    ('inappropriate', 'Inappropriate Content'),
-    ('other', 'Other'),
+  static List<(String, String)> _reasons(AppLocalizations l) => [
+    ('scam', l.reasonScam),
+    ('counterfeit', l.reasonCounterfeit),
+    ('inappropriate', l.reasonInappropriate),
+    ('other', l.reasonOther),
   ];
 
   @override
@@ -36,17 +37,18 @@ class _ReportDialogState extends State<ReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return AlertDialog(
       backgroundColor: AppColors.surface,
-      title: Text('Report ${widget.targetName}'),
+      title: Text(l.reportTitle(widget.targetName)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Select a reason:',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              l.selectReason,
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             RadioGroup<String>(
@@ -54,7 +56,7 @@ class _ReportDialogState extends State<ReportDialog> {
               onChanged: (v) => setState(() => _reason = v),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: reasons.map((r) {
+                children: _reasons(l).map((r) {
                   final (value, label) = r;
                   return GestureDetector(
                     onTap: () => setState(() => _reason = value),
@@ -75,8 +77,8 @@ class _ReportDialogState extends State<ReportDialog> {
             TextField(
               controller: _descController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Additional details (optional)',
+              decoration: InputDecoration(
+                hintText: l.additionalDetails,
               ),
             ),
           ],
@@ -85,7 +87,7 @@ class _ReportDialogState extends State<ReportDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
         ElevatedButton(
           onPressed: _reason != null
@@ -94,7 +96,7 @@ class _ReportDialogState extends State<ReportDialog> {
                     'description': _descController.text,
                   })
               : null,
-          child: const Text('Report'),
+          child: Text(l.report),
         ),
       ],
     );

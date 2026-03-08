@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/database.dart';
+import '../../core/errors/failures.dart';
+import '../../core/errors/result.dart';
 import '../datasources/supabase_client.dart';
 import '../models/review_model.dart';
 
@@ -11,28 +14,43 @@ class ReviewRepository {
   ReviewRepository(this._client);
   final SupabaseClient _client;
 
-  Future<List<ReviewModel>> getByUser(String userId) async {
-    final data = await _client
-        .from('reviews')
-        .select()
-        .eq('reviewee_id', userId)
-        .order('created_at', ascending: false);
-    return data.map((e) => ReviewModel.fromJson(e)).toList();
+  Future<Result<List<ReviewModel>>> getByUser(String userId) async {
+    try {
+      final data = await _client
+          .from(DbTables.reviews)
+          .select()
+          .eq('reviewee_id', userId)
+          .order('created_at', ascending: false);
+      return Success(data.map((e) => ReviewModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<ReviewModel> create(Map<String, dynamic> review) async {
-    final data =
-        await _client.from('reviews').insert(review).select().single();
-    return ReviewModel.fromJson(data);
+  Future<Result<ReviewModel>> create(Map<String, dynamic> review) async {
+    try {
+      final data = await _client
+          .from(DbTables.reviews)
+          .insert(review)
+          .select()
+          .single();
+      return Success(ReviewModel.fromJson(data));
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<double> getAverageRating(String userId) async {
-    final data = await _client
-        .from('reviews')
-        .select('rating')
-        .eq('reviewee_id', userId);
-    if (data.isEmpty) return 0;
-    final sum = data.fold<int>(0, (sum, e) => sum + (e['rating'] as int));
-    return sum / data.length;
+  Future<Result<double>> getAverageRating(String userId) async {
+    try {
+      final data = await _client
+          .from(DbTables.reviews)
+          .select('rating')
+          .eq('reviewee_id', userId);
+      if (data.isEmpty) return const Success(0);
+      final sum = data.fold<int>(0, (sum, e) => sum + (e['rating'] as int));
+      return Success(sum / data.length);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 }

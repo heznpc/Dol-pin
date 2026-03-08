@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class ErrorView extends StatelessWidget {
   const ErrorView({
@@ -34,7 +35,7 @@ class ErrorView extends StatelessWidget {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: onRetry,
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context)?.retry ?? 'Retry'),
               ),
             ],
           ],

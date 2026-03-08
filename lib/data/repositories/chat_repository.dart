@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/database.dart';
+import '../../core/errors/failures.dart';
+import '../../core/errors/result.dart';
 import '../datasources/supabase_client.dart';
 import '../models/chat_message_model.dart';
 
@@ -11,40 +14,55 @@ class ChatRepository {
   ChatRepository(this._client);
   final SupabaseClient _client;
 
-  Stream<List<ChatMessageModel>> watchMessages(
-      String userId, String otherUserId) {
+  Future<Result<List<Map<String, dynamic>>>> getChatList(
+      String userId) async {
+    try {
+      final data = await _client
+          .rpc(DbFunctions.getChatList, params: {'p_user_id': userId});
+      return Success(List<Map<String, dynamic>>.from(data));
+    } catch (e) {
+      return Fail(mapException(e));
+    }
+  }
+
+  /// Gets or creates a chat room between two users.
+  Future<Result<String>> getOrCreateRoom(String userId, String otherUserId,
+      {String? itemId}) async {
+    try {
+      final roomId =
+          await _client.rpc(DbFunctions.getOrCreateRoom, params: {
+        'user_a': userId,
+        'user_b': otherUserId,
+        'p_item_id': itemId,
+      });
+      return Success(roomId as String);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
+  }
+
+  /// Streams messages for a specific chat room.
+  Stream<List<ChatMessageModel>> watchRoomMessages(String roomId) {
     return _client
-        .from('chat_messages')
+        .from(DbTables.chatMessages)
         .stream(primaryKey: ['id'])
+        .eq('room_id', roomId)
         .order('created_at')
-        .map((data) => data
-            .where((e) =>
-                (e['sender_id'] == userId &&
-                    e['receiver_id'] == otherUserId) ||
-                (e['sender_id'] == otherUserId &&
-                    e['receiver_id'] == userId))
-            .map((e) => ChatMessageModel.fromJson(e))
-            .toList());
+        .map((data) => data.map((e) => ChatMessageModel.fromJson(e)).toList());
   }
 
-  Future<ChatMessageModel> send(Map<String, dynamic> message) async {
-    final data = await _client
-        .from('chat_messages')
-        .insert(message)
-        .select()
-        .single();
-    return ChatMessageModel.fromJson(data);
-  }
-
-  Future<void> markAsRead(String messageId) async {
-    await _client.from('chat_messages').update({
-      'read_at': DateTime.now().toIso8601String(),
-    }).eq('id', messageId);
-  }
-
-  Future<List<Map<String, dynamic>>> getChatList(String userId) async {
-    // Get latest message per conversation partner
-    final data = await _client.rpc('get_chat_list', params: {'user_id': userId});
-    return List<Map<String, dynamic>>.from(data);
+  /// Sends a message within a specific room.
+  Future<Result<ChatMessageModel>> sendRoomMessage(
+      Map<String, dynamic> message, String roomId) async {
+    try {
+      final data = await _client
+          .from(DbTables.chatMessages)
+          .insert({...message, 'room_id': roomId})
+          .select()
+          .single();
+      return Success(ChatMessageModel.fromJson(data));
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 }

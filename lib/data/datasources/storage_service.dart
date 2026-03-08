@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/database.dart';
+import '../../core/errors/failures.dart';
+import '../../core/errors/result.dart';
 import 'supabase_client.dart';
 
 final storageServiceProvider = Provider<StorageService>((ref) {
@@ -11,28 +14,48 @@ class StorageService {
   StorageService(this._client);
   final SupabaseClient _client;
 
-  Future<String> uploadItemPhoto(String userId, File file) async {
-    final ext = file.path.split('.').last;
-    final path = 'items/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
-    await _client.storage.from('rental-photos').upload(path, file);
-    return _client.storage.from('rental-photos').getPublicUrl(path);
+  Future<Result<String>> uploadItemPhoto(String userId, File file) async {
+    try {
+      final ext = file.path.split('.').last;
+      final path =
+          'items/$userId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+      await _client.storage.from(StorageBuckets.rentalPhotos).upload(path, file);
+      final url =
+          _client.storage.from(StorageBuckets.rentalPhotos).getPublicUrl(path);
+      return Success(url);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<String> uploadProfilePhoto(String userId, File file) async {
-    final ext = file.path.split('.').last;
-    final path = 'profiles/$userId.$ext';
-    await _client.storage.from('profile-photos').upload(
-          path,
-          file,
-          fileOptions: const FileOptions(upsert: true),
-        );
-    return _client.storage.from('profile-photos').getPublicUrl(path);
+  Future<Result<String>> uploadProfilePhoto(String userId, File file) async {
+    try {
+      final ext = file.path.split('.').last;
+      final path = 'profiles/$userId.$ext';
+      await _client.storage.from(StorageBuckets.profilePhotos).upload(
+            path,
+            file,
+            fileOptions: const FileOptions(upsert: true),
+          );
+      final url =
+          _client.storage.from(StorageBuckets.profilePhotos).getPublicUrl(path);
+      return Success(url);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<String> uploadChatImage(String chatId, File file) async {
-    final ext = file.path.split('.').last;
-    final path = 'chat/$chatId/${DateTime.now().millisecondsSinceEpoch}.$ext';
-    await _client.storage.from('chat-images').upload(path, file);
-    return _client.storage.from('chat-images').getPublicUrl(path);
+  Future<Result<String>> uploadChatImage(String chatId, File file) async {
+    try {
+      final ext = file.path.split('.').last;
+      final path =
+          'chat/$chatId/${DateTime.now().millisecondsSinceEpoch}.$ext';
+      await _client.storage.from(StorageBuckets.chatImages).upload(path, file);
+      final url =
+          _client.storage.from(StorageBuckets.chatImages).getPublicUrl(path);
+      return Success(url);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 }

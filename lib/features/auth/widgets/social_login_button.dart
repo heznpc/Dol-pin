@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 enum SocialProvider { apple, google }
 
@@ -15,17 +16,20 @@ class SocialLoginButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (icon, label, bgColor) = switch (provider) {
+    final (icon, bgColor) = switch (provider) {
       SocialProvider.apple => (
           Icons.apple,
-          'Continue with Apple',
           Colors.white,
         ),
       SocialProvider.google => (
           Icons.g_mobiledata,
-          'Continue with Google',
           AppColors.surfaceLight,
         ),
+    };
+
+    final label = switch (provider) {
+      SocialProvider.apple => AppLocalizations.of(context)!.continueWithApple,
+      SocialProvider.google => AppLocalizations.of(context)!.continueWithGoogle,
     };
 
     final textColor = switch (provider) {

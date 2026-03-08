@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/concert_model.dart';
-import '../../../shared/widgets/dolda_card.dart';
+import '../../../shared/widgets/cached_image.dart';
+import '../../../shared/widgets/dolpin_card.dart';
 
 class ConcertCard extends StatelessWidget {
   const ConcertCard({
@@ -28,13 +28,7 @@ class ConcertCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 16 / 9,
               child: concert.posterUrl != null
-                  ? CachedNetworkImage(
-                      imageUrl: concert.posterUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (_, _) => Container(
-                        color: AppColors.surfaceLight,
-                      ),
-                    )
+                  ? CachedImage(imageUrl: concert.posterUrl!)
                   : Container(
                       color: AppColors.surfaceLight,
                       child: const Icon(

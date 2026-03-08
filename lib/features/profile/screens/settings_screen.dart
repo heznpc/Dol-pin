@@ -1,91 +1,127 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/dialogs/confirm_dialog.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../providers/auth_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
+  String _currencyLabel(AppLocalizations l, String code) => switch (code) {
+    'KRW' => l.currencyKRW,
+    'IDR' => l.currencyIDR,
+    'JPY' => l.currencyJPY,
+    'USD' => l.currencyUSD,
+    _ => code,
+  };
+
+  String _localeLabel(AppLocalizations l, String code) => switch (code) {
+    'ko' => l.langKorean,
+    'en' => l.langEnglish,
+    'id' => l.langIndonesian,
+    'ja' => l.langJapanese,
+    _ => code,
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
+    final user = ref.watch(currentUserProvider).value;
+    final userCurrency = user?.currency ?? 'KRW';
+    final userLocale = user?.locale ?? 'en';
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l.settings)),
       body: ListView(
         children: [
           _SettingsSection(
-            title: 'Preferences',
+            title: l.preferences,
             children: [
               ListTile(
                 leading: const Icon(Icons.language),
-                title: const Text('Language'),
-                subtitle: const Text('English'),
+                title: Text(l.language),
+                subtitle: Text(_localeLabel(l, userLocale)),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showLanguagePicker(context),
+                onTap: () => _showLanguagePicker(context, ref, userLocale),
               ),
               ListTile(
                 leading: const Icon(Icons.attach_money),
-                title: const Text('Currency'),
-                subtitle: const Text('KRW'),
+                title: Text(l.currency),
+                subtitle: Text(_currencyLabel(l, userCurrency)),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () => _showCurrencyPicker(context),
+                onTap: () => _showCurrencyPicker(context, ref, userCurrency),
               ),
               ListTile(
                 leading: const Icon(Icons.location_on_outlined),
-                title: const Text('Region'),
-                subtitle: const Text('Korea'),
+                title: Text(l.region),
+                subtitle: Text(l.countryKorea),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
             ],
           ),
           _SettingsSection(
-            title: 'Notifications',
+            title: l.notifications,
             children: [
               SwitchListTile(
                 secondary: const Icon(Icons.notifications_outlined),
-                title: const Text('Push Notifications'),
+                title: Text(l.pushNotifications),
                 value: true,
-                onChanged: (v) {},
+                onChanged: (v) => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
               SwitchListTile(
                 secondary: const Icon(Icons.chat_outlined),
-                title: const Text('Chat Notifications'),
+                title: Text(l.chatNotifications),
                 value: true,
-                onChanged: (v) {},
+                onChanged: (v) => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
             ],
           ),
           _SettingsSection(
-            title: 'Account',
+            title: l.account,
             children: [
               ListTile(
                 leading: const Icon(Icons.download_outlined),
-                title: const Text('Export My Data'),
-                subtitle: const Text('Download as JSON'),
-                onTap: () {},
+                title: Text(l.exportMyData),
+                subtitle: Text(l.downloadAsJson),
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
               ListTile(
                 leading: Icon(Icons.delete_forever, color: AppColors.error),
-                title: Text('Delete Account',
+                title: Text(l.deleteAccount,
                     style: TextStyle(color: AppColors.error)),
                 onTap: () async {
                   final confirmed = await ConfirmDialog.show(
                     context,
-                    title: 'Delete Account',
-                    message:
-                        'This will permanently delete your account and all data. This cannot be undone.',
-                    confirmLabel: 'Delete',
+                    title: l.deleteAccount,
+                    message: l.deleteAccountMessage,
+                    confirmLabel: l.delete,
                     isDestructive: true,
                   );
                   if (confirmed && context.mounted) {
-                    final user = ref
-                        .read(authRepositoryProvider)
-                        .currentUser;
-                    if (user != null) {
-                      await ref
+                    final userId = ref.read(currentUserIdProvider);
+                    if (userId != null) {
+                      final result = await ref
                           .read(authRepositoryProvider)
-                          .softDelete(user.id);
+                          .softDelete(userId);
+                      if (context.mounted) {
+                        result.when(
+                          success: (_) {},
+                          failure: (f) =>
+                              ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('${l.deleteAccountFailed}: ${f.message}')),
+                          ),
+                        );
+                      }
                     }
                   }
                 },
@@ -95,7 +131,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Center(
             child: Text(
-              'dol-pin v0.1.0',
+              l.appVersion('0.1.0'),
               style: TextStyle(color: AppColors.textHint, fontSize: 13),
             ),
           ),
@@ -105,7 +141,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showLanguagePicker(BuildContext context) {
+  void _showLanguagePicker(BuildContext context, WidgetRef ref, String currentLocale) {
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -114,17 +151,24 @@ class SettingsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final (code, name) in [
-              ('ko', 'Korean'),
-              ('en', 'English'),
-              ('id', 'Indonesian'),
-              ('ja', 'Japanese'),
+              ('ko', l.langKorean),
+              ('en', l.langEnglish),
+              ('id', l.langIndonesian),
+              ('ja', l.langJapanese),
             ])
               ListTile(
                 title: Text(name),
-                trailing: code == 'en'
+                trailing: code == currentLocale
                     ? const Icon(Icons.check, color: AppColors.primary)
                     : null,
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  final userId = ref.read(currentUserIdProvider);
+                  if (userId != null) {
+                    ref.read(authRepositoryProvider).updateProfile(userId, {'locale': code});
+                    ref.invalidate(currentUserProvider);
+                  }
+                },
               ),
           ],
         ),
@@ -132,7 +176,8 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _showCurrencyPicker(BuildContext context) {
+  void _showCurrencyPicker(BuildContext context, WidgetRef ref, String currentCurrency) {
+    final l = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -141,17 +186,24 @@ class SettingsScreen extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final (code, name) in [
-              ('KRW', 'Korean Won (\u20A9)'),
-              ('IDR', 'Indonesian Rupiah (Rp)'),
-              ('JPY', 'Japanese Yen (\u00A5)'),
-              ('USD', 'US Dollar (\$)'),
+              ('KRW', l.currencyKRW),
+              ('IDR', l.currencyIDR),
+              ('JPY', l.currencyJPY),
+              ('USD', l.currencyUSD),
             ])
               ListTile(
                 title: Text(name),
-                trailing: code == 'KRW'
+                trailing: code == currentCurrency
                     ? const Icon(Icons.check, color: AppColors.primary)
                     : null,
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context);
+                  final userId = ref.read(currentUserIdProvider);
+                  if (userId != null) {
+                    ref.read(authRepositoryProvider).updateProfile(userId, {'currency': code});
+                    ref.invalidate(currentUserProvider);
+                  }
+                },
               ),
           ],
         ),

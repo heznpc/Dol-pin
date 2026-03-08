@@ -1,5 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../core/constants/database.dart';
+import '../../core/constants/enums.dart';
+import '../../core/errors/failures.dart';
+import '../../core/errors/result.dart';
 import '../datasources/supabase_client.dart';
 import '../models/rental_item_model.dart';
 
@@ -11,48 +15,117 @@ class RentalRepository {
   RentalRepository(this._client);
   final SupabaseClient _client;
 
-  Future<List<RentalItemModel>> getByConcert(String concertId) async {
-    final data = await _client
-        .from('rental_items')
-        .select()
-        .eq('concert_id', concertId)
-        .eq('status', 'active')
-        .order('created_at', ascending: false);
-    return data.map((e) => RentalItemModel.fromJson(e)).toList();
+  static const _defaultLimit = 20;
+
+  Future<Result<List<RentalItemModel>>> getByConcert(
+    String concertId, {
+    int limit = _defaultLimit,
+    int offset = 0,
+  }) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .select()
+          .eq('concert_id', concertId)
+          .eq('status', ItemStatus.active.name)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<List<RentalItemModel>> getByCategory(String category) async {
-    final data = await _client
-        .from('rental_items')
-        .select()
-        .eq('category', category)
-        .eq('status', 'active')
-        .order('created_at', ascending: false);
-    return data.map((e) => RentalItemModel.fromJson(e)).toList();
+  Future<Result<List<RentalItemModel>>> getByCategory(
+    String category, {
+    int limit = _defaultLimit,
+    int offset = 0,
+  }) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .select()
+          .eq('category', category)
+          .eq('status', ItemStatus.active.name)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<RentalItemModel> getById(String id) async {
-    final data =
-        await _client.from('rental_items').select().eq('id', id).single();
-    return RentalItemModel.fromJson(data);
+  Future<Result<RentalItemModel>> getById(String id) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .select()
+          .eq('id', id)
+          .single();
+      return Success(RentalItemModel.fromJson(data));
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<List<RentalItemModel>> getByLender(String lenderId) async {
-    final data = await _client
-        .from('rental_items')
-        .select()
-        .eq('lender_id', lenderId)
-        .order('created_at', ascending: false);
-    return data.map((e) => RentalItemModel.fromJson(e)).toList();
+  Future<Result<List<RentalItemModel>>> getByLender(
+    String lenderId, {
+    int limit = _defaultLimit,
+    int offset = 0,
+  }) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .select()
+          .eq('lender_id', lenderId)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<RentalItemModel> create(Map<String, dynamic> item) async {
-    final data =
-        await _client.from('rental_items').insert(item).select().single();
-    return RentalItemModel.fromJson(data);
+  Future<Result<RentalItemModel>> create(Map<String, dynamic> item) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .insert(item)
+          .select()
+          .single();
+      return Success(RentalItemModel.fromJson(data));
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 
-  Future<void> updateStatus(String id, String status) async {
-    await _client.from('rental_items').update({'status': status}).eq('id', id);
+  Future<Result<List<RentalItemModel>>> search(
+    String query, {
+    int limit = _defaultLimit,
+    int offset = 0,
+  }) async {
+    try {
+      final data = await _client
+          .from(DbTables.rentalItems)
+          .select()
+          .ilike('title', '%$query%')
+          .eq('status', ItemStatus.active.name)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+      return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
+  }
+
+  Future<Result<void>> updateStatus(String id, ItemStatus status) async {
+    try {
+      await _client
+          .from(DbTables.rentalItems)
+          .update({'status': status.name}).eq('id', id);
+      return const Success(null);
+    } catch (e) {
+      return Fail(mapException(e));
+    }
   }
 }

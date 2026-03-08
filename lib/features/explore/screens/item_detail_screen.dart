@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../data/models/rental_item_model.dart';
 import '../../../providers/rental_provider.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/safe_badge.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/error_view.dart';
+import '../../../shared/widgets/dolpin_button.dart';
+import '../../../data/repositories/report_repository.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../shared/dialogs/report_dialog.dart';
 
 class ItemDetailScreen extends ConsumerWidget {
   const ItemDetailScreen({super.key, required this.itemId});
@@ -26,23 +32,52 @@ class ItemDetailScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(rentalDetailProvider(itemId)),
         ),
       ),
+      bottomNavigationBar: itemAsync.whenOrNull(
+        data: (item) => _BookButton(item: item),
+      ),
     );
   }
 }
 
-class _ItemDetailBody extends StatefulWidget {
+class _ItemDetailBody extends ConsumerStatefulWidget {
   const _ItemDetailBody({required this.item});
   final RentalItemModel item;
 
   @override
-  State<_ItemDetailBody> createState() => _ItemDetailBodyState();
+  ConsumerState<_ItemDetailBody> createState() => _ItemDetailBodyState();
 }
 
-class _ItemDetailBodyState extends State<_ItemDetailBody> {
+class _ItemDetailBodyState extends ConsumerState<_ItemDetailBody> {
   int _currentPhoto = 0;
+
+  Future<void> _reportItem() async {
+    final l = AppLocalizations.of(context)!;
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null) return;
+
+    final result = await ReportDialog.show(context, widget.item.title);
+    if (result != null && mounted) {
+      final res = await ref.read(reportRepositoryProvider).submitReport(
+            reporterId: userId,
+            reportedItemId: widget.item.id,
+            reason: result['reason']!,
+            description: result['description'],
+          );
+      if (!mounted) return;
+      res.when(
+        success: (_) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l.reportSubmitted)),
+        ),
+        failure: (f) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l.reportFailed}: ${f.message}')),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final item = widget.item;
 
     return CustomScrollView(
@@ -50,14 +85,19 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
         SliverAppBar(
           expandedHeight: MediaQuery.of(context).size.width,
           pinned: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.flag_outlined),
+              onPressed: _reportItem,
+            ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             background: item.photos.isNotEmpty
                 ? PageView.builder(
                     itemCount: item.photos.length,
                     onPageChanged: (i) => setState(() => _currentPhoto = i),
-                    itemBuilder: (context, i) => CachedNetworkImage(
+                    itemBuilder: (context, i) => CachedImage(
                       imageUrl: item.photos[i],
-                      fit: BoxFit.cover,
                     ),
                   )
                 : Container(color: AppColors.surfaceLight),
@@ -101,14 +141,14 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                           color: AppColors.verified.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.bluetooth, size: 14, color: AppColors.verified),
-                            SizedBox(width: 4),
+                            const Icon(Icons.bluetooth, size: 14, color: AppColors.verified),
+                            const SizedBox(width: 4),
                             Text(
-                              'BT Verified',
-                              style: TextStyle(
+                              l.btVerified,
+                              style: const TextStyle(
                                 color: AppColors.verified,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -126,7 +166,7 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'Grade ${item.conditionGrade}',
+                          l.gradeLabel(item.conditionGrade ?? ''),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
@@ -165,9 +205,9 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const Text(
-                      ' / day',
-                      style: TextStyle(
+                    Text(
+                      ' ${l.perDay}',
+                      style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 16,
                       ),
@@ -176,7 +216,7 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Deposit: ${CurrencyFormatter.format(item.deposit, item.currency)}',
+                  l.depositAmount(CurrencyFormatter.format(item.deposit, item.currency)),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
@@ -188,9 +228,9 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                 const Divider(color: AppColors.divider),
                 const SizedBox(height: 16),
                 if (item.description != null) ...[
-                  const Text(
-                    'Description',
-                    style: TextStyle(
+                  Text(
+                    l.description,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -208,13 +248,13 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
                 ],
                 _InfoRow(
                   icon: Icons.local_shipping_outlined,
-                  label: 'Pickup',
+                  label: l.pickup,
                   value: item.pickupMethod,
                 ),
                 if (item.availableFrom != null && item.availableTo != null)
                   _InfoRow(
                     icon: Icons.date_range,
-                    label: 'Available',
+                    label: l.available,
                     value: DateFormatter.rentalPeriod(
                         item.availableFrom!, item.availableTo!),
                   ),
@@ -224,6 +264,35 @@ class _ItemDetailBodyState extends State<_ItemDetailBody> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _BookButton extends StatelessWidget {
+  const _BookButton({required this.item});
+  final RentalItemModel item;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.divider)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: DolpinButton(
+          label: l.bookNow,
+          onPressed: () {
+            context.pushNamed(
+              'reserve',
+              pathParameters: {'itemId': item.id},
+            );
+          },
+        ),
+      ),
     );
   }
 }

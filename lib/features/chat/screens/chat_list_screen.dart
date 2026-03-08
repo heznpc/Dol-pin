@@ -1,14 +1,23 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../providers/auth_provider.dart';
+import '../../../providers/chat_provider.dart';
+import '../../../shared/widgets/loading_indicator.dart';
+import '../../../shared/widgets/error_view.dart';
 
 class ChatListScreen extends ConsumerWidget {
   const ChatListScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO: Connect to chatListProvider
+    final l = AppLocalizations.of(context)!;
+    final userAsync = ref.watch(currentUserProvider);
+
     return SafeArea(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -16,14 +25,69 @@ class ChatListScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
-              'Messages',
+              l.messages,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ),
-          const Expanded(
-            child: _EmptyChatState(),
+          Expanded(
+            child: userAsync.when(
+              data: (user) {
+                if (user == null) return const _EmptyChatState();
+                return _ChatList(userId: user.id);
+              },
+              loading: () => const LoadingIndicator(),
+              error: (_, _) => const _EmptyChatState(),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChatList extends ConsumerWidget {
+  const _ChatList({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chatListAsync = ref.watch(chatListProvider(userId));
+
+    return chatListAsync.when(
+      data: (chats) {
+        if (chats.isEmpty) return const _EmptyChatState();
+        return RefreshIndicator(
+          onRefresh: () async => ref.invalidate(chatListProvider(userId)),
+          child: ListView.separated(
+            itemCount: chats.length,
+            separatorBuilder: (_, _) =>
+                const Divider(height: 1, color: AppColors.divider),
+            itemBuilder: (context, index) {
+              final chat = chats[index];
+              return ChatListTile(
+                nickname: chat['partner_nickname'] ?? 'User',
+                profileImage: chat['partner_image'] as String?,
+                lastMessage: chat['last_message'] ?? '',
+                lastMessageAt: DateTime.tryParse(
+                        chat['last_message_at']?.toString() ?? '') ??
+                    DateTime.now(),
+                unreadCount: (chat['unread_count'] as num?)?.toInt() ?? 0,
+                onTap: () => context.pushNamed(
+                  'chatRoom',
+                  pathParameters: {'userId': chat['partner_id']},
+                  queryParameters: {
+                    'name': chat['partner_nickname'] ?? 'User'
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const LoadingIndicator(),
+      error: (e, _) => ErrorView(
+        message: AppLocalizations.of(context)!.couldNotLoadMessages,
+        onRetry: () => ref.invalidate(chatListProvider(userId)),
       ),
     );
   }
@@ -34,6 +98,7 @@ class _EmptyChatState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -44,17 +109,17 @@ class _EmptyChatState extends StatelessWidget {
             color: AppColors.textHint.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'No messages yet',
-            style: TextStyle(
+          Text(
+            l.noMessagesYet,
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Start a conversation by booking a rental',
-            style: TextStyle(
+          Text(
+            l.startConversation,
+            style: const TextStyle(
               color: AppColors.textHint,
               fontSize: 14,
             ),
@@ -85,12 +150,14 @@ class ChatListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: AppColors.surfaceLight,
-        backgroundImage:
-            profileImage != null ? NetworkImage(profileImage!) : null,
+        backgroundImage: profileImage != null
+            ? CachedNetworkImageProvider(profileImage!)
+            : null,
         child: profileImage == null
             ? const Icon(Icons.person, color: AppColors.textHint)
             : null,
@@ -117,7 +184,7 @@ class ChatListTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            DateFormatter.relative(lastMessageAt),
+            DateFormatter.relative(lastMessageAt, l),
             style: const TextStyle(
               color: AppColors.textHint,
               fontSize: 12,

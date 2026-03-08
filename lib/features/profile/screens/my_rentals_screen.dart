@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../providers/auth_provider.dart';
 import '../../../providers/rental_provider.dart';
 import '../../../providers/reservation_provider.dart';
+import '../../../shared/widgets/cached_image.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../core/utils/formatters.dart';
 
@@ -13,22 +15,23 @@ class MyRentalsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userId = ref.watch(authRepositoryProvider).currentUser?.id;
+    final l = AppLocalizations.of(context)!;
+    final userId = ref.watch(currentUserIdProvider);
 
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My Rentals'),
-          bottom: const TabBar(
+          title: Text(l.myRentals),
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'As Lender'),
-              Tab(text: 'As Borrower'),
+              Tab(text: l.asLender),
+              Tab(text: l.asBorrower),
             ],
           ),
         ),
         body: userId == null
-            ? const Center(child: Text('Please log in'))
+            ? Center(child: Text(l.pleaseLogIn))
             : TabBarView(
                 children: [
                   _LenderTab(userId: userId),
@@ -46,16 +49,17 @@ class _LenderTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final itemsAsync = ref.watch(myRentalsProvider(userId));
 
     return itemsAsync.when(
       data: (items) {
         if (items.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              'No items registered yet.\nTap + to register your first item!',
+              l.noItemsRegistered,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           );
         }
@@ -71,11 +75,10 @@ class _LenderTab extends ConsumerWidget {
                 leading: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: item.photos.isNotEmpty
-                      ? Image.network(
-                          item.photos.first,
+                      ? CachedImage(
+                          imageUrl: item.photos.first,
                           width: 56,
                           height: 56,
-                          fit: BoxFit.cover,
                         )
                       : Container(
                           width: 56,
@@ -100,7 +103,7 @@ class _LenderTab extends ConsumerWidget {
         );
       },
       loading: () => const LoadingIndicator(),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(l.errorPrefix(e.toString()))),
     );
   }
 }
@@ -111,16 +114,17 @@ class _BorrowerTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final reservationsAsync = ref.watch(borrowerReservationsProvider(userId));
 
     return reservationsAsync.when(
       data: (reservations) {
         if (reservations.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
-              'No reservations yet.\nExplore items to get started!',
+              l.noReservationsYet,
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           );
         }
@@ -149,7 +153,7 @@ class _BorrowerTab extends ConsumerWidget {
         );
       },
       loading: () => const LoadingIndicator(),
-      error: (e, _) => Center(child: Text('Error: $e')),
+      error: (e, _) => Center(child: Text(l.errorPrefix(e.toString()))),
     );
   }
 }

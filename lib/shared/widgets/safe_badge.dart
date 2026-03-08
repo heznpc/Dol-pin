@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class SafeBadge extends StatelessWidget {
   const SafeBadge({
     super.key,
-    this.label = 'Escrow Protected',
+    this.label,
     this.compact = false,
   });
 
-  final String label;
+  final String? label;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final displayLabel = label ?? AppLocalizations.of(context)!.escrowProtected;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: compact ? 6 : 10,
@@ -36,7 +38,7 @@ class SafeBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            label,
+            displayLabel,
             style: TextStyle(
               color: AppColors.escrowSafe,
               fontSize: compact ? 10 : 12,

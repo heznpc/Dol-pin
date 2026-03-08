@@ -1,8 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/repositories/auth_repository.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../widgets/lender_badge.dart';
@@ -12,6 +14,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
 
     return SafeArea(
@@ -25,7 +28,7 @@ class ProfileScreen extends ConsumerWidget {
                 radius: 48,
                 backgroundColor: AppColors.surfaceLight,
                 backgroundImage: user?.profileImage != null
-                    ? NetworkImage(user!.profileImage!)
+                    ? CachedNetworkImageProvider(user!.profileImage!)
                     : null,
                 child: user?.profileImage == null
                     ? const Icon(Icons.person, size: 48, color: AppColors.textHint)
@@ -33,7 +36,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                user?.nickname ?? 'Guest',
+                user?.nickname ?? l.guest,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 4),
@@ -54,34 +57,40 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               _ProfileMenuItem(
                 icon: Icons.shopping_bag_outlined,
-                label: 'My Rentals',
+                label: l.myRentals,
                 onTap: () => context.pushNamed('myRentals'),
               ),
               _ProfileMenuItem(
                 icon: Icons.star_outline,
-                label: 'Reviews',
-                onTap: () {},
+                label: l.reviews,
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
               const Divider(color: AppColors.divider, height: 32),
               _ProfileMenuItem(
                 icon: Icons.settings_outlined,
-                label: 'Settings',
+                label: l.settings,
                 onTap: () => context.pushNamed('settings'),
               ),
               _ProfileMenuItem(
                 icon: Icons.help_outline,
-                label: 'Help & Support',
-                onTap: () {},
+                label: l.help,
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
               _ProfileMenuItem(
                 icon: Icons.policy_outlined,
-                label: 'Privacy Policy',
-                onTap: () {},
+                label: l.privacy,
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(l.comingSoon)),
+                ),
               ),
               const Divider(color: AppColors.divider, height: 32),
               _ProfileMenuItem(
                 icon: Icons.logout,
-                label: 'Log Out',
+                label: l.logOut,
                 isDestructive: true,
                 onTap: () async {
                   await ref.read(authRepositoryProvider).signOut();
@@ -92,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
         loading: () => const LoadingIndicator(),
-        error: (_, _) => const Center(child: Text('Error loading profile')),
+        error: (_, _) => Center(child: Text(l.errorLoadingProfile)),
       ),
     );
   }
