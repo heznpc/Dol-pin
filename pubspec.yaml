@@ -39,7 +39,7 @@ dependencies:
   http: ^1.2.2
 
   # Notifications
-  flutter_local_notifications: ^18.0.1
+  flutter_local_notifications: ^21.0.0
 
   # Utility
   geolocator: ^13.0.2
