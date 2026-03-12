@@ -42,7 +42,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
 
   # Utility
-  geolocator: ^13.0.2
+  geolocator: ^14.0.2
   url_launcher: ^6.3.1
   share_plus: ^10.1.4
   shared_preferences: ^2.3.4
