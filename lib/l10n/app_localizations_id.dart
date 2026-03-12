@@ -577,4 +577,23 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get pricePositiveRequired => 'Harga dan deposit harus lebih dari 0';
+
+  @override
+  String get share => 'Bagikan';
+
+  @override
+  String get linkCopied => 'Tautan disalin!';
+
+  @override
+  String get shareItem => 'Bagikan item';
+
+  @override
+  String checkOutThisItem(Object title, Object price) {
+    return 'Lihat item ini di dol-pin! $title - $price/hari';
+  }
+
+  @override
+  String shareConcert(Object title) {
+    return 'Lihat konser ini di dol-pin! $title';
+  }
 }

@@ -1190,6 +1190,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Price and deposit must be greater than 0'**
   String get pricePositiveRequired;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied!'**
+  String get linkCopied;
+
+  /// No description provided for @shareItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Share item'**
+  String get shareItem;
+
+  /// No description provided for @checkOutThisItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out this item on dol-pin! {title} - {price}/day'**
+  String checkOutThisItem(Object title, Object price);
+
+  /// No description provided for @shareConcert.
+  ///
+  /// In en, this message translates to:
+  /// **'Check out this concert on dol-pin! {title}'**
+  String shareConcert(Object title);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

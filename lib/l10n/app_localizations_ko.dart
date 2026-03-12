@@ -577,4 +577,23 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get pricePositiveRequired => '가격과 보증금은 0보다 커야 합니다';
+
+  @override
+  String get share => '공유';
+
+  @override
+  String get linkCopied => '링크가 복사되었습니다';
+
+  @override
+  String get shareItem => '아이템 공유';
+
+  @override
+  String checkOutThisItem(Object title, Object price) {
+    return '돌핀에서 이 아이템을 확인해보세요! $title - $price/일';
+  }
+
+  @override
+  String shareConcert(Object title) {
+    return '돌핀에서 이 콘서트를 확인해보세요! $title';
+  }
 }

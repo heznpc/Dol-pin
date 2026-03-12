@@ -26,6 +26,10 @@ class ValidationFailure extends Failure {
   const ValidationFailure([super.message = 'Validation failed']);
 }
 
+class PaymentFailure extends Failure {
+  const PaymentFailure([super.message = 'Payment failed']);
+}
+
 /// Maps raw exceptions from Supabase/network into typed [Failure].
 Failure mapException(Object e) {
   if (e is SocketException) return const NetworkFailure();

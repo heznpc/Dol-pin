@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/share_helper.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../data/models/rental_item_model.dart';
 import '../../../providers/rental_provider.dart';
@@ -50,6 +51,15 @@ class _ItemDetailBody extends ConsumerStatefulWidget {
 class _ItemDetailBodyState extends ConsumerState<_ItemDetailBody> {
   int _currentPhoto = 0;
 
+  Future<void> _shareItem() async {
+    final l = AppLocalizations.of(context)!;
+    final item = widget.item;
+    final price = CurrencyFormatter.format(item.dailyPrice, item.currency);
+    final url = 'https://dolpin.app/item/${item.id}';
+    final message = '${l.checkOutThisItem(item.title, price)}\n$url';
+    await shareWithFallback(context, url: url, message: message);
+  }
+
   Future<void> _reportItem() async {
     final l = AppLocalizations.of(context)!;
     final userId = ref.read(currentUserIdProvider);
@@ -86,6 +96,11 @@ class _ItemDetailBodyState extends ConsumerState<_ItemDetailBody> {
           expandedHeight: MediaQuery.of(context).size.width,
           pinned: true,
           actions: [
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              tooltip: l.share,
+              onPressed: _shareItem,
+            ),
             IconButton(
               icon: const Icon(Icons.flag_outlined),
               onPressed: _reportItem,

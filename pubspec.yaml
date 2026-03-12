@@ -34,9 +34,17 @@ dependencies:
   # AI
   google_generative_ai: ^0.4.6
 
+  # Payment
+  iamport_flutter: ^0.10.20
+  http: ^1.2.2
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+
   # Utility
   geolocator: ^13.0.2
   url_launcher: ^6.3.1
+  share_plus: ^10.1.4
   shared_preferences: ^2.3.4
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0

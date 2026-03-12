@@ -23,7 +23,7 @@ abstract class PaginatedFamilyAsyncNotifier<T, A>
         items: items,
         hasMore: items.length == kPaginatedPageSize,
       ),
-      failure: (f) => throw Exception(f.message),
+      failure: (f) => throw Exception('${f.runtimeType}: ${f.message}'),
     );
   }
 

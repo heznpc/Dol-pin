@@ -210,5 +210,13 @@
   "@timeHoursAgo": { "placeholders": { "hours": { "type": "int" } } },
   "timeDaysAgo": "{days}d ago",
   "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } },
-  "pricePositiveRequired": "Price and deposit must be greater than 0"
+  "pricePositiveRequired": "Price and deposit must be greater than 0",
+
+  "share": "Share",
+  "linkCopied": "Link copied!",
+  "shareItem": "Share item",
+  "checkOutThisItem": "Check out this item on dol-pin! {title} - {price}/day",
+  "@checkOutThisItem": { "placeholders": { "title": {}, "price": {} } },
+  "shareConcert": "Check out this concert on dol-pin! {title}",
+  "@shareConcert": { "placeholders": { "title": {} } }
 }

@@ -12,4 +12,7 @@ abstract class Env {
 
   @EnviedField(varName: 'GEMINI_API_KEY', defaultValue: '')
   static const String geminiApiKey = _Env.geminiApiKey;
+
+  @EnviedField(varName: 'PORTONE_IMP_CODE', defaultValue: 'imp00000000')
+  static const String portOneImpCode = _Env.portOneImpCode;
 }

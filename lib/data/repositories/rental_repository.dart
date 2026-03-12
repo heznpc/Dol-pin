@@ -4,6 +4,7 @@ import '../../core/constants/database.dart';
 import '../../core/constants/enums.dart';
 import '../../core/errors/failures.dart';
 import '../../core/errors/result.dart';
+import '../../core/utils/pagination.dart';
 import '../datasources/supabase_client.dart';
 import '../models/rental_item_model.dart';
 
@@ -15,11 +16,9 @@ class RentalRepository {
   RentalRepository(this._client);
   final SupabaseClient _client;
 
-  static const _defaultLimit = 20;
-
   Future<Result<List<RentalItemModel>>> getByConcert(
     String concertId, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
@@ -29,7 +28,7 @@ class RentalRepository {
           .eq('concert_id', concertId)
           .eq('status', ItemStatus.active.name)
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));
@@ -38,7 +37,7 @@ class RentalRepository {
 
   Future<Result<List<RentalItemModel>>> getByCategory(
     String category, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
@@ -48,7 +47,7 @@ class RentalRepository {
           .eq('category', category)
           .eq('status', ItemStatus.active.name)
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));
@@ -70,7 +69,7 @@ class RentalRepository {
 
   Future<Result<List<RentalItemModel>>> getByLender(
     String lenderId, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
@@ -79,7 +78,7 @@ class RentalRepository {
           .select()
           .eq('lender_id', lenderId)
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));
@@ -101,17 +100,17 @@ class RentalRepository {
 
   Future<Result<List<RentalItemModel>>> search(
     String query, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
       final data = await _client
           .from(DbTables.rentalItems)
           .select()
-          .ilike('title', '%$query%')
           .eq('status', ItemStatus.active.name)
+          .or('title.ilike.%$query%,description.ilike.%$query%')
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/constants/env.dart';
 import 'core/utils/crash_reporter.dart';
+import 'data/datasources/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,5 +29,9 @@ void main() async {
         child: DolpinApp(),
       ),
     );
+
+    // Initialize local notifications after runApp so it doesn't block
+    // the first frame. Permission dialogs will show after the app is visible.
+    PushNotificationService.initPlugin();
   });
 }

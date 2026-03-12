@@ -40,5 +40,15 @@ void main() {
       const result = Success<void>(null);
       expect(result.isSuccess, isTrue);
     });
+
+    test('value on Fail should throw StateError', () {
+      const Result<int> result = Fail(ServerFailure('oops'));
+      expect(() => result.value, throwsStateError);
+    });
+
+    test('failure on Success should throw StateError', () {
+      const result = Success(42);
+      expect(() => result.failure, throwsStateError);
+    });
   });
 }

@@ -6,8 +6,17 @@ sealed class Result<T> {
   bool get isSuccess => this is Success<T>;
   bool get isFailure => this is Fail<T>;
 
-  T get value => (this as Success<T>).data;
-  Failure get failure => (this as Fail<T>).error;
+  T get value => switch (this) {
+        Success(:final data) => data,
+        Fail(:final error) => throw StateError(
+            'Called value on Fail: ${error.message}',
+          ),
+      };
+
+  Failure get failure => switch (this) {
+        Fail(:final error) => error,
+        Success() => throw StateError('Called failure on Success'),
+      };
 
   R when<R>({
     required R Function(T data) success,

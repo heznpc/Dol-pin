@@ -4,6 +4,7 @@ import '../../core/constants/database.dart';
 import '../../core/constants/enums.dart';
 import '../../core/errors/failures.dart';
 import '../../core/errors/result.dart';
+import '../../core/utils/pagination.dart';
 import '../datasources/supabase_client.dart';
 import '../models/reservation_model.dart';
 
@@ -15,8 +16,6 @@ final reservationRepositoryProvider =
 class ReservationRepository {
   ReservationRepository(this._client);
   final SupabaseClient _client;
-
-  static const _defaultLimit = 20;
 
   Future<Result<ReservationModel>> create(
       Map<String, dynamic> reservation) async {
@@ -34,7 +33,7 @@ class ReservationRepository {
 
   Future<Result<List<ReservationModel>>> getByBorrower(
     String borrowerId, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
@@ -43,7 +42,7 @@ class ReservationRepository {
           .select()
           .eq('borrower_id', borrowerId)
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => ReservationModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));
@@ -52,7 +51,7 @@ class ReservationRepository {
 
   Future<Result<List<ReservationModel>>> getByLender(
     String lenderId, {
-    int limit = _defaultLimit,
+    int limit = kDefaultPageLimit,
     int offset = 0,
   }) async {
     try {
@@ -61,7 +60,7 @@ class ReservationRepository {
           .select()
           .eq('lender_id', lenderId)
           .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => ReservationModel.fromJson(e)).toList());
     } catch (e) {
       return Fail(mapException(e));

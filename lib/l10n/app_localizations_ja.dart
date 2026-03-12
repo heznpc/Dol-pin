@@ -577,4 +577,23 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pricePositiveRequired => '価格とデポジットは0より大きくなければなりません';
+
+  @override
+  String get share => '共有';
+
+  @override
+  String get linkCopied => 'リンクをコピーしました！';
+
+  @override
+  String get shareItem => 'アイテムを共有';
+
+  @override
+  String checkOutThisItem(Object title, Object price) {
+    return 'dol-pinでこのアイテムをチェック！ $title - $price/日';
+  }
+
+  @override
+  String shareConcert(Object title) {
+    return 'dol-pinでこのコンサートをチェック！ $title';
+  }
 }

@@ -583,4 +583,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pricePositiveRequired => 'Price and deposit must be greater than 0';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get linkCopied => 'Link copied!';
+
+  @override
+  String get shareItem => 'Share item';
+
+  @override
+  String checkOutThisItem(Object title, Object price) {
+    return 'Check out this item on dol-pin! $title - $price/day';
+  }
+
+  @override
+  String shareConcert(Object title) {
+    return 'Check out this concert on dol-pin! $title';
+  }
 }

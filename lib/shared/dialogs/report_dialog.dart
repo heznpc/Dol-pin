@@ -65,6 +65,7 @@ class _ReportDialogState extends State<ReportDialog> {
                       child: Row(
                         children: [
                           Radio<String>(value: value),
+                          const SizedBox(width: 8),
                           Text(label),
                         ],
                       ),

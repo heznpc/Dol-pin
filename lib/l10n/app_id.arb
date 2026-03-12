@@ -210,5 +210,13 @@
   "@timeHoursAgo": { "placeholders": { "hours": { "type": "int" } } },
   "timeDaysAgo": "{days} hari lalu",
   "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } },
-  "pricePositiveRequired": "Harga dan deposit harus lebih dari 0"
+  "pricePositiveRequired": "Harga dan deposit harus lebih dari 0",
+
+  "share": "Bagikan",
+  "linkCopied": "Tautan disalin!",
+  "shareItem": "Bagikan item",
+  "checkOutThisItem": "Lihat item ini di dol-pin! {title} - {price}/hari",
+  "@checkOutThisItem": { "placeholders": { "title": {}, "price": {} } },
+  "shareConcert": "Lihat konser ini di dol-pin! {title}",
+  "@shareConcert": { "placeholders": { "title": {} } }
 }

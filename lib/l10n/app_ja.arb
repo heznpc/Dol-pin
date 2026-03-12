@@ -210,5 +210,13 @@
   "@timeHoursAgo": { "placeholders": { "hours": { "type": "int" } } },
   "timeDaysAgo": "{days}日前",
   "@timeDaysAgo": { "placeholders": { "days": { "type": "int" } } },
-  "pricePositiveRequired": "価格とデポジットは0より大きくなければなりません"
+  "pricePositiveRequired": "価格とデポジットは0より大きくなければなりません",
+
+  "share": "共有",
+  "linkCopied": "リンクをコピーしました！",
+  "shareItem": "アイテムを共有",
+  "checkOutThisItem": "dol-pinでこのアイテムをチェック！ {title} - {price}/日",
+  "@checkOutThisItem": { "placeholders": { "title": {}, "price": {} } },
+  "shareConcert": "dol-pinでこのコンサートをチェック！ {title}",
+  "@shareConcert": { "placeholders": { "title": {} } }
 }

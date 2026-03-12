@@ -18,6 +18,12 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL || 'https://placeholder.supabase.co' }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY || 'placeholder-anon-key' }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY || 'placeholder-gemini-key' }}" >> .env
+          echo "PORTONE_IMP_CODE=${{ secrets.PORTONE_IMP_CODE || 'imp00000000' }}" >> .env
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build appbundle --release
       # TODO: Add Fastlane upload to Play Store
@@ -28,12 +34,19 @@ jobs:
 
   deploy-ios:
     runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
       - run: flutter pub get
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL || 'https://placeholder.supabase.co' }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY || 'placeholder-anon-key' }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY || 'placeholder-gemini-key' }}" >> .env
+          echo "PORTONE_IMP_CODE=${{ secrets.PORTONE_IMP_CODE || 'imp00000000' }}" >> .env
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build ipa --release
       # TODO: Add Fastlane upload to App Store

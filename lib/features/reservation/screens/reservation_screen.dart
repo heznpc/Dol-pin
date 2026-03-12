@@ -17,6 +17,8 @@ import '../../../shared/widgets/dolpin_button.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/error_view.dart';
 import '../../../shared/widgets/safe_badge.dart';
+import '../../../data/datasources/payment_service.dart';
+import 'payment_screen.dart';
 
 class ReservationScreen extends ConsumerWidget {
   const ReservationScreen({super.key, required this.itemId});
@@ -126,15 +128,46 @@ class _ReservationBodyState extends ConsumerState<_ReservationBody> {
         return;
       }
 
+      final lenderName = profileResult.when(
+        success: (user) => user?.nickname ?? 'User',
+        failure: (_) => 'User',
+      );
+
+      // Navigate to payment screen (KRW only for now)
+      if (item.currency == 'KRW') {
+        final gateway = ref.read(paymentServiceProvider).gatewayForCurrency('KRW') as PortOneGateway;
+        final userProfile = ref.read(currentUserProvider).valueOrNull;
+        final params = gateway.buildParams(
+          reservationId: reservationResult.value.toString(),
+          amount: _total,
+          itemName: item.title,
+          buyerName: userProfile?.nickname ?? 'User',
+          buyerTel: userProfile?.phone ?? '',
+        );
+
+        if (!mounted) return;
+        final paymentResult = await Navigator.push<PaymentResult>(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PaymentScreen(params: params),
+          ),
+        );
+
+        if (!mounted) return;
+        if (paymentResult == null || paymentResult.status != PaymentStatus.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AppLocalizations.of(context)!.reservationFailed)),
+          );
+          return;
+        }
+      }
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.reservationCreated),
           backgroundColor: AppColors.success,
         ),
-      );
-      final lenderName = profileResult.when(
-        success: (user) => user?.nickname ?? 'User',
-        failure: (_) => 'User',
       );
       context.pushReplacementNamed(
         'chatRoom',
