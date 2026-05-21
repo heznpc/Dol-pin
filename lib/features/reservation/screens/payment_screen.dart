@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:iamport_flutter/iamport_payment.dart';
-import 'package:iamport_flutter/model/payment_data.dart';
+import 'package:portone_flutter/iamport_payment.dart';
+import 'package:portone_flutter/model/payment_data.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/env.dart';
 import '../../../data/datasources/payment_service.dart';

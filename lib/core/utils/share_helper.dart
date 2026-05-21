@@ -11,7 +11,7 @@ Future<void> shareWithFallback(
   required String message,
 }) async {
   try {
-    await Share.share(message);
+    await SharePlus.instance.share(ShareParams(text: message));
   } catch (_) {
     await Clipboard.setData(ClipboardData(text: url));
     if (context.mounted) {
