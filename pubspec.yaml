@@ -36,7 +36,7 @@ dependencies:
   http: ^1.2.2
 
   # Notifications
-  flutter_local_notifications: ^18.0.1
+  flutter_local_notifications: ^22.0.1
 
   # Crash Reporting
   sentry_flutter: ^8.12.0
