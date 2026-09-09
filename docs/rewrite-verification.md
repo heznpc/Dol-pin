@@ -60,3 +60,21 @@
 - 상품 등록/예약/결제/반납의 새 RN 흐름, consumer web, PG 실호출은 아직 미검증.
 - 내부 여유가 804 MiB까지 감소해 이 검증에 사용한 Simulator와 Metro를 종료.
   dependencies, Expo 다운로드, VM 데이터는 외장 SSD에 저장했다.
+
+## RN 상품 작성 slice
+
+- `021_product_authoring.sql`: 상품 사진 전용 public bucket, 소유자 경로 업로드,
+  상품 쓰기 column privileges, 가격·품목·사진 개수 제약 추가.
+  기존 상품 전체 validation은 별도 감사 전까지 NOT VALID로 보존했다.
+- 실제 Storage upload에서 기존 chat policy의 `chat_rooms` SELECT 권한 누락을
+  발견해 `022_storage_policy_read_privilege.sql`로 수정. 참여자 RLS는 유지했다.
+- `scripts/check-local-products.mjs` 실제 Auth/Storage/PostgREST 검증 통과:
+  업로드, 등록, 비로그인 공개 조회, 소유자 수정 성공. 타인 경로 업로드·타인 수정·
+  인증 플래그 변경·음수 가격 등록 거부. 스크립트는 가상 상품을 로컬 DB에 남긴다.
+- 실제 iOS Simulator에서 사진 선택 → 업로드 → RHF/Zod form → 등록 → 상세 화면
+  재조회 성공. `verification/rn-created-product.png`는 해당 실행 증거다.
+- 재시작 후 인증 세션 유지도 확인했다. CUA 한글 자동 타이핑 누락으로 등록
+  fixture는 영문을 사용했다. 실제 한국어 키보드 입력 UX는 미검증이다.
+- TypeScript strict 및 기존 DB 거래 invariant 재검증 통과.
+- 날짜별 availability, 콘서트 연결 form, 사진 제거/고아 업로드 회수는 후속 작업.
+  새 물품 작성의 기본 경로가 검증됐으며 제품 전체 완료를 의미하지 않는다.
