@@ -111,3 +111,12 @@
 - 증거: `verification/rn-rental-request.png`, `verification/rn-rental-accepted.png`, `verification/web-rn-rental.png`.
 - 금융 연동 이후 상태, 실제 PG 결제, 환불·복구·운영 화면은 아직 미검증이다. 기존 legacy 생성 RPC 권한 회수 때문에 이 branch를 운영 backend에 먼저 배포하지 않는다.
 - CI SDK mismatch를 `mise.toml`과 동일한 Flutter 3.44.8로 수정했다. commit 710ffde의 원격 build/database job 모두 성공했다. 예약 변경의 원격 결과는 별도 확인한다.
+
+### 예약 초안 복원
+
+RN 화면 재진입에서 날짜 초안 복원을 확인했다. 웹 datetime-local 입력은
+`input` 이벤트에서도 RHF와 Zustand에 반영하고, 탭의 sessionStorage에
+입력/요청 식별자만 보존한다. 계정이 바뀌면 이전 계정의 초안을 비운다.
+브라우저 뒤로가기 후 2026-09-24 10:00–20:00이 복원되었고, 복원된 값으로
+실제 요청하여 같은 기간·35,000원 합계가 저장된 것을 확인했다.
+증거: `verification/web-rental-draft.png`.
