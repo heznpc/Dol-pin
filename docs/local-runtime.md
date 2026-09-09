@@ -63,3 +63,35 @@ history를 끄는 것이 아니다. 컨테이너 로그는 `docker logs`로 확�
 
 Colima의 기존 home symlink가 연결되지 않은 디스크를 가리키면 먼저 이를
 확인한다. 기존 symlink/데이터를 삭제하지 않고 백업하고 새 runtime에 연결한다.
+
+## RN 실행
+
+일반 환경에서는 repository root에서 `npm ci`를 실행한다. 외장 workspace를
+사용하는 이 환경에서는 외장 `workspace`에 root package.json을 복사하고,
+`apps`와 `packages`를 저장소로 연결한 후 해당 위치에서 설치한다. 저장소의
+`node_modules`는 외장 workspace의 node_modules로 연결한다. lockfile은 저장소에
+보관한다. Metro 설정은 일반 설치와 외장 설치를 함께 지원한다.
+
+```bash
+bash scripts/with-runtime.sh node scripts/setup-local-env.mjs
+export __UNSAFE_EXPO_HOME_DIRECTORY="$DOLPIN_RUNTIME_ROOT/expo"
+export TMPDIR="$DOLPIN_RUNTIME_ROOT/tmp"
+export REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1
+npm run start -w @dolpin/mobile -- --port 8081 --lan
+```
+
+이 주소는 같은 Mac의 iOS Simulator용이다. 실기기는 기기에서 접근 가능한 API와
+Metro 주소가 필요하다. `--localhost`가 IPv6에만 bind하면서 manifest는 IPv4를
+반환하는 환경에서는 bundle 로딩이 실패하므로 위 조합을 사용한다. 서버 수명 관리
+하네스가 있는 환경은 이 명령을 해당 하네스로 실행하고 작업 종료 시 중지한다.
+
+`supabase/config.toml`의 세 전화번호와 OTP는 로컬 개발 fixture다. SMS provider의
+값은 의도적으로 유효하지 않은 placeholder이며 실제 발송 기능이 아니다.
+hosted Auth 설정으로 옮기지 않는다. 로컬 Auth 검증:
+
+```bash
+node scripts/check-local-auth.mjs
+npm run typecheck
+```
+
+이 검증은 가상 계정/profile을 로컬 DB에 남긴다. 실제 PG 결제를 호출하지 않는다.

@@ -42,3 +42,21 @@
   실행으로 core runtime을 시작했다. 실제 최종 running container 목록에서는
   analytics가 남아 있으므로 analytics 제외까지 성공했다고 주장하지 않음.
 - VM 메모리는 macOS swap 압박을 줄이기 위해 3 GiB로 조정한다.
+
+## RN foundation — 실제 실행 검증
+
+- Expo SDK 57 / React Native 0.86.3 / React 19.2.3 기반 workspace 추가.
+- TypeScript strict 검사 통과. 공유 package는 DTO/schema/API contract만 담당.
+- 실제 iOS 26.3 Simulator에서 Expo Go 57.0.9로 탐색 화면 렌더링 확인.
+- 앱 UI에서 로컬 전용 테스트 전화번호와 고정 OTP로 로그인 후 Supabase의
+  `차용자 테스트` profile 조회 확인. 증거: `verification/rn-local-account.png`.
+  화면에 보이는 번호는 `config.toml`에 등록한 가상 fixture다.
+- `020_verified_profile_command.sql` 적용. Auth의 인증된 phone으로만 profile 생성.
+  `scripts/check-local-auth.mjs` 실행으로 OTP → profile command → RLS 조회 및
+  직접 identity INSERT 거부 확인.
+- 외장 workspace symlink를 Metro watchFolders/extraNodeModules에 명시해
+  native bundle resolution 오류 해결. localhost의 IPv6 bind와 manifest의
+  IPv4 주소 불일치도 확인해 실행 지침에 반영.
+- 상품 등록/예약/결제/반납의 새 RN 흐름, consumer web, PG 실호출은 아직 미검증.
+- 내부 여유가 804 MiB까지 감소해 이 검증에 사용한 Simulator와 Metro를 종료.
+  dependencies, Expo 다운로드, VM 데이터는 외장 SSD에 저장했다.
