@@ -100,3 +100,14 @@
 - Expo iOS production export 성공: Hermes bundle 약 4MB, 외장 output에 생성.
 - 실제 선택된 브라우저 탭에서 viewport 390px / document scrollWidth 375px 확인.
   가로 넘침 없음. `verification/web-mobile.png`에 화면 보관.
+
+## 예약 slice — 2026-09-09
+
+- migration 023–025를 로컬에 적용했다. 신규 requested는 기간을 점유하지 않고 accepted부터 timestamp exclusion으로 점유한다.
+- `scripts/check-local-rentals.mjs`: 실제 Auth/PostgREST 경로에서 당일 요금, 동일 요청 재시도, 동시 accept 단 하나 성공/다른 하나 23P01, 역할 위반, 직접 상태 변경 차단, snapshot 불변, 이벤트 중복 방지를 확인했다.
+- `supabase/tests/rental-expiry.sql`: 결과 불명 payment attempt는 유지하고, 결제가 없다고 확인된 fixture만 만료시키며 이벤트를 한 번 기록했다. pg_cron 실제 실행도 `succeeded`로 확인했다.
+- RN iPhone 17e에서 웹 등록 상품을 2026-09-21 10:00–20:00으로 요청했다. 5,000원 + 보증금 30,000원 견적을 확인하고, 대여자 계정으로 전환해 수락했다.
+- 웹 production에서 RN 수락 거래의 동일 상태/시각/금액을 확인했다. 반대 방향으로 RN 등록 상품을 웹에서 예약 요청하고 취소했다. 해당 브라우저 console error/warn은 없었다.
+- 증거: `verification/rn-rental-request.png`, `verification/rn-rental-accepted.png`, `verification/web-rn-rental.png`.
+- 금융 연동 이후 상태, 실제 PG 결제, 환불·복구·운영 화면은 아직 미검증이다. 기존 legacy 생성 RPC 권한 회수 때문에 이 branch를 운영 backend에 먼저 배포하지 않는다.
+- CI SDK mismatch를 `mise.toml`과 동일한 Flutter 3.44.8로 수정했다. commit 710ffde의 원격 build/database job 모두 성공했다. 예약 변경의 원격 결과는 별도 확인한다.
