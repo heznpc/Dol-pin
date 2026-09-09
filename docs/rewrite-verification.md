@@ -23,3 +23,22 @@
 - VZ VM 실행 및 Docker 29.5.2 응답 확인. 전역 Docker context는 바꾸지 않음.
 - `scripts/with-runtime.sh`로 명시적 runtime 경로와 Docker socket 사용.
 - Supabase 이미지는 이 외장 VM으로 다운로드 중. migration reset은 아직 미검증.
+
+## 실제 DB baseline 결과
+
+- Supabase CLI 전용 실행본 2.107.0 사용. macOS code signature 문제와 복구는
+  `local-runtime.md`에 기록.
+- 최초 core read 테스트는 `permission denied for table reservations`로 실패.
+  기존 migrations가 테이블 GRANT를 암묵적 환경 기본값에 의존함을 확인.
+- `019_explicit_core_read_privileges.sql`로 명시적 read privilege를 추가하고
+  직접 reservation 쓰기를 revoke. RLS policy는 유지.
+- `supabase db reset --local --yes` exit 0: migrations 001–019 fresh 적용 확인.
+- `supabase/tests/legacy-authority.sql`를 실제 DB에서 실행, exit 0.
+  서버 가격 20,000 + 보증금 30,000 = 50,000 KRW, 기간 중복 거부,
+  직접 상태 변경 거부, 무관 사용자 read/transition 거부,
+  미결제 인수 거부, 결제 fixture 이후 대여자 인수 성공 확인.
+- 위 테스트의 결제 상태는 신뢰된 DB fixture다. 실제 PG 검증 증거가 아니다.
+- Vector의 Docker log connection 오류로 전체 start가 실패. `-x vector,analytics`
+  실행으로 core runtime을 시작했다. 실제 최종 running container 목록에서는
+  analytics가 남아 있으므로 analytics 제외까지 성공했다고 주장하지 않음.
+- VM 메모리는 macOS swap 압박을 줄이기 위해 3 GiB로 조정한다.
