@@ -78,3 +78,25 @@
 - TypeScript strict 및 기존 DB 거래 invariant 재검증 통과.
 - 날짜별 availability, 콘서트 연결 form, 사진 제거/고아 업로드 회수는 후속 작업.
   새 물품 작성의 기본 경로가 검증됐으며 제품 전체 완료를 의미하지 않는다.
+
+## Next.js 상품 slice
+
+- RN 기본 상품 흐름 검증 이후 동일 `api-client`로 Next.js consumer 구현.
+- production build와 strict typecheck 통과. 실제 in-app browser에서:
+  RN 생성 상품 검색/상세 조회, 카테고리 빈 결과, 뒤로 이동 시 필터 유지,
+  OTP 로그인, Storage 사진 업로드, 한글 상품 등록 후 상세 재조회 성공.
+- 실제 브라우저의 production console error/warning 없음 확인.
+- desktop/390px 화면 비교 후 작은 화면 필터를 2열로, 메뉴 간격을 축소.
+  `verification/web-products.png`에 실제 등록 데이터 화면 보관.
+- `design/web-reference.png`와 렌더링을 view_image로 직접 비교.
+  팔레트, 정보 위계, 좌측 필터, 사진 배치, 가격/보증금 표기 확인.
+- 생성 참고 이미지의 8개 가상 상품을 복제하지 않았다. 실제 fixture 3개만 표시.
+  내 거래 navigation은 해당 거래 slice가 동작한 뒤 추가한다. 스크린샷은 기능
+  검증 증거이며 최종 제품/전체 디자인 완료를 의미하지 않는다.
+- CI에 local API Auth/Storage 검증, RN bundle, Next build를 추가. 원격 CI 실행은
+  아직 확인하지 않았다.
+- 개발 서버의 IAB bundle 초기화 오류는 재현됐으나 production에서는 같은 기능
+  검증이 통과했다. 개발 모드 문제는 별도로 추적한다.
+- Expo iOS production export 성공: Hermes bundle 약 4MB, 외장 output에 생성.
+- 실제 선택된 브라우저 탭에서 viewport 390px / document scrollWidth 375px 확인.
+  가로 넘침 없음. `verification/web-mobile.png`에 화면 보관.

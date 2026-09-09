@@ -95,3 +95,25 @@ npm run typecheck
 ```
 
 이 검증은 가상 계정/profile을 로컬 DB에 남긴다. 실제 PG 결제를 호출하지 않는다.
+
+## Next.js 실행
+
+Next.js `distDir`는 프로젝트 밖의 절대 경로를 지원하지 않는다. 기본 `.next`를
+사용하고 외장 output directory로 symlink한다. 외장 output의 상위 경로에도
+workspace node_modules가 resolve되어야 서버가 React/Next runtime을 찾는다.
+이 환경은 runtime root의 `node_modules`를 `workspace/node_modules`에 연결했다.
+기존 디렉터리가 있다면 덮어쓰지 않고 위치와 내용을 먼저 확인한다.
+
+```bash
+mkdir -p "$DOLPIN_RUNTIME_ROOT/next-output"
+ln -s "$DOLPIN_RUNTIME_ROOT/next-output" apps/web/.next
+# runtime root에 node_modules가 없는 경우:
+ln -s "$DOLPIN_RUNTIME_ROOT/workspace/node_modules" "$DOLPIN_RUNTIME_ROOT/node_modules"
+NEXT_TELEMETRY_DISABLED=1 npm run build -w @dolpin/web
+NEXT_TELEMETRY_DISABLED=1 npm run start -w @dolpin/web
+```
+
+마지막 서버 명령도 설치된 수명 관리 하네스로 실행한다. 검증은 production server로
+수행했다. 내장 브라우저의 개발 모드 번들 초기화 오류는 미해결 항목이다.
+lockfile에 외장 symlink를 따라 생긴 `../...` extraneous 항목은 배포 계약이 아니므로
+제거하고 workspace의 상대 경로 항목만 보관한다.
