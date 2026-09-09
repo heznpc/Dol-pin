@@ -53,3 +53,18 @@ supabase functions deploy toss-payment
 - 실제 Google·Apple 인증 및 토스 테스트 결제: 키 미설정으로 미검증.
 
 공식 연동 기준: [Supabase PKCE](https://supabase.com/docs/guides/auth/sessions/pkce-flow), [모바일 deep link](https://supabase.com/docs/guides/auth/native-mobile-deep-linking), [토스 승인 API](https://docs.tosspayments.com/reference), [결제 흐름](https://docs.tosspayments.com/guides/v2/get-started/payment-flow).
+
+## 카카오·네이버 추가
+
+RN·웹 계정 화면에 카카오와 네이버를 추가했다. 카카오는 Supabase `kakao`, 네이버는 `custom:naver` OIDC를 사용한다. 네이버 discovery의 issuer·S256·RS256 지원을 직접 조회했다. 구형 `/oauth2.0` API 대신 discovery가 지정하는 `/oauth2` 경로를 사용하고 ID 토큰 검증은 Supabase에 맡긴다.
+
+- 루트 `.env`: `KAKAO_CLIENT_ID`(REST API 키), `KAKAO_CLIENT_SECRET`, `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`.
+- 카카오 로컬 활성화: `node scripts/configure-oauth.mjs` 후 Auth 재시작. 호스팅 환경은 Supabase의 Kakao provider에 같은 값을 입력한다. 이메일 미동의 로그인을 허용하려면 provider의 Allow users without an email 설정을 켠다.
+- 네이버 등록: 루트 `.env`의 `SUPABASE_URL`·`SUPABASE_SERVICE_ROLE_KEY`가 대상 환경인지 확인한 뒤 `node scripts/configure-naver.mjs`. 같은 identifier가 있으면 갱신한다. 비밀값은 출력하지 않는다.
+- 네이버 Developers에는 Supabase 커스텀 제공자 화면에서 표시되는 Callback URL을 그대로 등록한다. 커스텀 제공자는 기본 제공자와 callback 경로가 다를 수 있으므로 `/auth/v1/callback`을 임의로 쓰지 않는다.
+- migration 028은 이메일·전화번호 미동의 계정도 **Auth가 저장한** 카카오/네이버 identity가 있을 때 프로필을 생성하게 한다. 사용자 수정 가능한 metadata를 근거로 허용하지 않고, 연락처·본인확인 상태도 만들어내지 않는다. 실제 PostgreSQL에서 정상 identity와 metadata 위조 거절을 검증했다.
+- 실제 네이버·카카오 인증 성공/복귀는 키 미설정으로 미검증. 네이버 커스텀 provider 등록에는 해당 기능을 지원하는 Supabase Auth 버전이 필요하다.
+
+실행 확인: iPhone 17e / iOS 26.3의 Expo Go에서 최신 RN 앱을 실행하고 서버의 상품 목록·가격 표시를 확인했다. Expo Go에서 화면 실행이 된다는 것과 `dolpin://` OAuth 복귀를 지원하는 development build 검증은 별개다.
+
+기준: [카카오 Supabase 연동](https://supabase.com/docs/guides/auth/social-login/auth-kakao), [커스텀 제공자](https://supabase.com/docs/guides/auth/custom-oauth-providers), [네이버 OIDC](https://developers.naver.com/docs/login/devguide/devguide.md).
