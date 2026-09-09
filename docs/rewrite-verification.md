@@ -120,3 +120,15 @@ RN 화면 재진입에서 날짜 초안 복원을 확인했다. 웹 datetime-loc
 브라우저 뒤로가기 후 2026-09-24 10:00–20:00이 복원되었고, 복원된 값으로
 실제 요청하여 같은 기간·35,000원 합계가 저장된 것을 확인했다.
 증거: `verification/web-rental-draft.png`.
+
+## OAuth 프로필 준비 — 로그인 연동과 구분
+
+migration 026–027은 Auth가 확인한 이메일 또는 전화번호로 프로필 생성을
+허용한다. 전화번호 없는 계정에는 NULL을 저장하고 identity_verified는 false로
+유지한다. 프로필 소유자의 수정 범위는 nickname/profile_image/fav_groups/region/locale로
+제한하여 phone/신뢰 상태 변경을 막는다.
+
+`supabase/tests/oauth-profile.sql`에서 신뢰된 Auth 이메일 확인 결과를 fixture로
+만들어 프로필 생성·재시도·미인증 거부·전화번호 위조 차단·허용 필드 수정을
+검증했다. 이것은 Google/Apple 로그인·콜백의 실제 동작 증거가 아니다.
+OAuth 제공자 설정과 준비된 토스페이먼츠 키 위치/연동 방식 확인이 남아 있다.
