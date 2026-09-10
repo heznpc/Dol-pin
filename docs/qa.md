@@ -7,7 +7,7 @@ QA gateway는 `127.0.0.1:55325`, 별도 Next production server는 `127.0.0.1:301
 
 ```bash
 npm ci
-supabase start -x vector,analytics
+supabase start -x vector,logflare
 npm run check:migrations
 npm run typecheck
 npm run typecheck -w @dolpin/web
@@ -41,6 +41,23 @@ Docker의 postgres 사용자를 사용하며 원격 Supabase URL은 거부한다
 `DOLPIN_QA_DB_CONTAINER`를 함께 설정한다. 후자는 그 프로젝트의 정확한
 `supabase_db_<project_id>` 이름이어야 한다. 기존 DB의 reset은 QA에 필요하지 않다.
 CI의 fresh reset은 CI가 생성한 전용 DB에서만 실행한다.
+
+# 거래 UX 회귀 검증
+
+브라우저 시나리오는 총 8개다. 위 거래 QA에 더해 다음을 확인한다.
+
+- 수락 전 조건을 확정 조건으로 표시하지 않으며, 결제 시도 전에는 복구 버튼을 표시하지 않는다.
+- 승인 응답 유실은 실패 알림 대신 진행 안내로 표시하고, 같은 창과 새 로그인 세션에서 자동 복구한다.
+- 반납 사진 선택·제거·교체만으로 상태가 바뀌지 않으며 별도 제출 후에만 반납 처리한다.
+- 전액 환불은 금액·거래 종료 결과를 확인하고 확정해야 실행된다. ‘거래 유지’는 상태를 보존한다.
+- 예상 총액은 24시간과 24시간 1분의 요금 경계를 반영한다. 잘못된 기간에는 예상액을 숨긴다.
+- 기한이 지난 결제창은 이유와 거래로 돌아가는 링크를 제공한다.
+
+2026-09-10 로컬 검증: 브라우저 8개, 금융 통합 2개, Edge 3개 통과.
+Browser plugin not available — 저장소의 Playwright 자동 QA를 사용했다.
+iPhone 17e 시뮬레이터에서도 로그인 후 역할별 거래 안내와 기간 변경에 따른
+예상 총액 갱신을 확인했다. 네이티브 사진 선택·환불 확인의 전체 자동 E2E는
+아직 없으며 실제 PG·카드사 앱 복귀 검증과 구분한다.
 
 # 금융 복구 배포 조건
 
