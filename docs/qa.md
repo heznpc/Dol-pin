@@ -85,3 +85,6 @@ PortOne V1의 결과 불명 취소는 자동 재발송하지 않고 조회로만
 기존 이력에 `027_profile_field_privileges`만 있고 토스 객체를 수동 적용한 로컬 DB는
 `029_toss_checkout`이 객체를 보존하며 정식 이력을 기록한다. 028은 기존 번호를 유지한다.
 배포 DB의 027이 다른 내용을 가리키면 먼저 이력을 대조해야 한다. 원격 이력을 자동 repair하지 않는다.
+
+네이티브 시작 안정성은 `npm run qa:ios -- <SIMULATOR_UDID>`로 별도 검사한다.
+사전 빌드와 실행 환경은 [iOS 실행 안내](ios-runtime.md)를 따른다.
