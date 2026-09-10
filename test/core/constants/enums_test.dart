@@ -6,14 +6,34 @@ void main() {
     test('value returns correct DB string', () {
       expect(ReservationStatus.pending.value, 'pending');
       expect(ReservationStatus.pickedUp.value, 'picked_up');
-      expect(ReservationStatus.returned_.value, 'returned');
+      expect(ReservationStatus.returned.value, 'returned');
     });
 
     test('fromString parses correctly', () {
-      expect(ReservationStatus.fromString('picked_up'), ReservationStatus.pickedUp);
-      expect(ReservationStatus.fromString('returned'), ReservationStatus.returned_);
-      expect(ReservationStatus.fromString('unknown'), ReservationStatus.pending);
+      expect(
+        ReservationStatus.fromString('picked_up'),
+        ReservationStatus.pickedUp,
+      );
+      expect(
+        ReservationStatus.fromString('returned'),
+        ReservationStatus.returned,
+      );
     });
+
+    test('tryParse returns null for unknown status', () {
+      expect(ReservationStatus.tryParse('unknown'), isNull);
+      expect(ReservationStatus.tryParse(null), isNull);
+    });
+
+    test(
+      'fromString rejects unknown status instead of defaulting to pending',
+      () {
+        expect(
+          () => ReservationStatus.fromString('unknown'),
+          throwsA(isA<FormatException>()),
+        );
+      },
+    );
   });
 
   group('ItemCategory', () {

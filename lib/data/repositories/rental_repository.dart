@@ -8,6 +8,63 @@ import '../../core/utils/pagination.dart';
 import '../datasources/supabase_client.dart';
 import '../models/rental_item_model.dart';
 
+class CreateRentalItemInput {
+  const CreateRentalItemInput({
+    required this.lenderId,
+    required this.concertId,
+    required this.category,
+    required this.title,
+    required this.description,
+    required this.photos,
+    required this.dailyPrice,
+    required this.currency,
+    required this.deposit,
+    required this.conditionGrade,
+    required this.pickupMethod,
+    required this.pickupLocationLabel,
+    required this.availableFrom,
+    required this.availableTo,
+    this.vlmTag,
+  });
+
+  final String lenderId;
+  final String concertId;
+  final ItemCategory category;
+  final String title;
+  final String description;
+  final List<String> photos;
+  final int dailyPrice;
+  final String currency;
+  final int deposit;
+  final String conditionGrade;
+  final PickupMethod pickupMethod;
+  final String pickupLocationLabel;
+  final DateTime availableFrom;
+  final DateTime availableTo;
+  final String? vlmTag;
+
+  Map<String, dynamic> toJson() => {
+    'lender_id': lenderId,
+    'concert_id': concertId,
+    'category': category.name,
+    'title': title,
+    'description': description,
+    'photos': photos,
+    'daily_price': dailyPrice,
+    'currency': currency,
+    'deposit': deposit,
+    'condition_grade': conditionGrade,
+    'pickup_method': pickupMethod.name,
+    'pickup_location': {'label': pickupLocationLabel},
+    'available_from': _dateOnly(availableFrom),
+    'available_to': _dateOnly(availableTo),
+    'vlm_tag': vlmTag,
+  };
+
+  static String _dateOnly(DateTime value) =>
+      value.toIso8601String().split('T').first;
+}
+
 final rentalRepositoryProvider = Provider<RentalRepository>((ref) {
   return RentalRepository(ref.watch(supabaseProvider));
 });
@@ -46,6 +103,41 @@ class RentalRepository {
           .select()
           .eq('category', category)
           .eq('status', ItemStatus.active.name)
+          .order('created_at', ascending: false)
+          .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
+      return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
+    } catch (e) {
+      return Fail(mapException(e));
+    }
+  }
+
+  Future<Result<List<RentalItemModel>>> getFiltered({
+    String? concertId,
+    String? category,
+    String? searchQuery,
+    int limit = kDefaultPageLimit,
+    int offset = 0,
+  }) async {
+    final safeQuery = searchQuery == null
+        ? null
+        : _sanitizeSearchQuery(searchQuery);
+    try {
+      var query = _client
+          .from(DbTables.rentalItems)
+          .select()
+          .eq('status', ItemStatus.active.name);
+      if (concertId != null && concertId.isNotEmpty) {
+        query = query.eq('concert_id', concertId);
+      }
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
+      }
+      if (safeQuery != null && safeQuery.isNotEmpty) {
+        query = query.or(
+          'title.ilike.%$safeQuery%,description.ilike.%$safeQuery%',
+        );
+      }
+      final data = await query
           .order('created_at', ascending: false)
           .range(safeOffset(offset), safeOffset(offset) + safeLimit(limit) - 1);
       return Success(data.map((e) => RentalItemModel.fromJson(e)).toList());
@@ -98,6 +190,10 @@ class RentalRepository {
     }
   }
 
+  Future<Result<RentalItemModel>> createItem(CreateRentalItemInput input) {
+    return create(input.toJson());
+  }
+
   /// PostgREST `or()` parses commas / parens / colons / `*` as filter syntax,
   /// and `%` / `_` are LIKE wildcards. Both surfaces are user-controlled in
   /// search input, so we strip them before interpolating into the filter
@@ -138,7 +234,8 @@ class RentalRepository {
     try {
       await _client
           .from(DbTables.rentalItems)
-          .update({'status': status.name}).eq('id', id);
+          .update({'status': status.name})
+          .eq('id', id);
       return const Success(null);
     } catch (e) {
       return Fail(mapException(e));

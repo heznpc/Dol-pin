@@ -1,8 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:dolpin/core/constants/database.dart';
 import 'package:dolpin/core/errors/failures.dart';
 import 'package:dolpin/data/repositories/auth_repository.dart';
+
 import '../../helpers/postgrest_fakes.dart';
 
 class MockSupabaseClient extends Mock implements SupabaseClient {}
@@ -18,6 +21,7 @@ void main() {
     mockClient = MockSupabaseClient();
     mockAuth = MockGoTrueClient();
     when(() => mockClient.auth).thenReturn(mockAuth);
+    when(() => mockAuth.currentUser).thenReturn(null);
     repository = AuthRepository(mockClient);
   });
 
@@ -28,6 +32,7 @@ void main() {
       ).thenAnswer((_) async => AuthResponse());
 
       final result = await repository.signInWithOtp('+821012345678');
+
       expect(result.isSuccess, isTrue);
     });
 
@@ -37,9 +42,23 @@ void main() {
       ).thenThrow(AuthException('Rate limit exceeded'));
 
       final result = await repository.signInWithOtp('+821012345678');
+
       expect(result.isFailure, isTrue);
       expect(result.failure, isA<AuthFailure>());
       expect(result.failure.message, 'Rate limit exceeded');
+    });
+
+    test('rate-limits repeated OTP requests before calling Supabase', () async {
+      when(
+        () => mockAuth.signInWithOtp(phone: '+821012345678'),
+      ).thenAnswer((_) async => AuthResponse());
+
+      await repository.signInWithOtp('+821012345678');
+      final second = await repository.signInWithOtp('+821012345678');
+
+      expect(second.isFailure, isTrue);
+      expect(second.failure, isA<OtpRateLimitFailure>());
+      verify(() => mockAuth.signInWithOtp(phone: '+821012345678')).called(1);
     });
   });
 
@@ -55,6 +74,7 @@ void main() {
       ).thenAnswer((_) async => authResponse);
 
       final result = await repository.verifyOtp('+821012345678', '123456');
+
       expect(result.isSuccess, isTrue);
       expect(result.value, authResponse);
     });
@@ -69,6 +89,7 @@ void main() {
       ).thenThrow(AuthException('Invalid OTP'));
 
       final result = await repository.verifyOtp('+821012345678', '000000');
+
       expect(result.isFailure, isTrue);
       expect(result.failure, isA<AuthFailure>());
     });
@@ -79,6 +100,7 @@ void main() {
       when(() => mockAuth.signOut()).thenAnswer((_) async {});
 
       await repository.signOut();
+
       verify(() => mockAuth.signOut()).called(1);
     });
   });
@@ -90,9 +112,11 @@ void main() {
     setUp(() {
       mockQueryBuilder = MockSupabaseQueryBuilder();
       mockFilterBuilder = MockPostgrestFilterBuilder<PostgrestList>();
-      when(() => mockClient.from('users')).thenAnswer((_) => mockQueryBuilder);
       when(
-        () => mockQueryBuilder.select(),
+        () => mockClient.from(DbTables.publicUserProfiles),
+      ).thenAnswer((_) => mockQueryBuilder);
+      when(
+        () => mockQueryBuilder.select(any()),
       ).thenAnswer((_) => mockFilterBuilder);
     });
 
@@ -105,6 +129,7 @@ void main() {
       ).thenAnswer((_) => FakePostgrestResponse<PostgrestMap?>(null));
 
       final result = await repository.getProfile('user-123');
+
       expect(result.isSuccess, isTrue);
       expect(result.value, isNull);
     });
@@ -115,6 +140,7 @@ void main() {
       ).thenThrow(PostgrestException(message: 'DB error', code: '500'));
 
       final result = await repository.getProfile('user-123');
+
       expect(result.isFailure, isTrue);
       expect(result.failure, isA<ServerFailure>());
     });
