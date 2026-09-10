@@ -1,6 +1,6 @@
 # Dol-pin architecture
 
-상태: 재편 목표 구조. 현재 구현 여부는 `rewrite-verification.md`를 따른다.
+상태: 목표 구조와 구현 책임. 자동 거래 QA 및 배포 조건은 `qa.md`를 따른다.
 
 ```text
 React Native + Expo                 Next.js
@@ -15,7 +15,7 @@ native session/camera/deep link      SSR / URL filters / web session
         |                                    |
    RLS read / 허용 필드 수정          RPC / Edge Functions
         |                           DB command / PG orchestration
-        |                                    | <--> PortOne
+        |                                    | <--> Toss / PortOne
         +---------------PostgreSQL-----------+
                       constraints / locks
                   reservations / payments / refunds
@@ -73,3 +73,14 @@ PG success 뒤 DB가 실패하면 `reconciliation_required` 쓰기 자체도 실
 기존 reservations·concerts·rental_items와 유효한 제약은 근거가 있을 때만
 변경한다. 새 이름이나 프런트엔드 프레임워크 때문에 DB를 초기화하지 않는다.
 신규 migration은 누적 적용하며 배포 데이터의 존재·양·호환성은 별도 확인한다.
+
+## 구현된 금융 복구
+
+- `toss_checkout_sessions`: 주문별 독립적인 브라우저 권한. 새 창이 기존 권한을 취소하지 않는다.
+- `toss_checkouts`: 승인할 payment key, 조회 시각, 실행권을 저장한다. 사용자는 로그인한 거래 상세에서 복구할 수 있다.
+- `rental_money_operations`: 환불/보증금 반환의 작업 ID, 확정 금액, provider, 최초 발송 시각, 실행권, 완료 상태.
+- `rental-payment`: 사용자를 검증한 뒤 DB command로 금융 intent를 만들고 provider별로 조회/취소한다.
+- `rental-recovery`: 매분 조회가 오래된 작업부터 제한된 수로 처리한다. worker와 사용자 재시도는 같은 DB claim을 사용한다.
+- `return_rental`: 비공개 Storage object의 거래·소유자를 검증한다. 신고 후 lender의 별도 수령 확인이 보증금 반환을 시작한다.
+
+대여료 송금과 관리자 분쟁 UI는 이 명령의 범위에 포함하지 않는다.
