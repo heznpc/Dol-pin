@@ -1,6 +1,6 @@
 # Google·Apple OAuth / 토스페이먼츠
 
-새 RN·웹 앱은 Supabase Auth의 Google·Apple OAuth(PKCE)를 사용한다. 전화번호 OTP도 유지한다. 결제는 PortOne을 경유하지 않는 토스페이먼츠 v2 결제창 + 승인 API다.
+RN·웹 앱은 이메일 가입·로그인을 기본으로 제공하며 Google·Apple OAuth(PKCE)와 전화번호 OTP도 유지한다. 결제는 PortOne을 경유하지 않는 토스페이먼츠 v2 결제창 + 승인 API다.
 
 ## 입력할 환경 변수
 
@@ -25,13 +25,15 @@ OAuth 클라이언트 비밀키는 Supabase Auth에서 사용하고 앱 번들�
 ## 서버 반영
 
 ```bash
-# 대상 프로젝트를 확인한 후 해당 환경에 migration 027까지 적용
+# 대상 프로젝트와 docs/qa.md의 복구 배포 조건을 확인한 후 적용
 supabase db push
 supabase secrets set --env-file supabase/functions/.env
 supabase functions deploy toss-payment
+supabase functions deploy rental-payment
+supabase functions deploy rental-recovery
 ```
 
-새 공개 웹 사이트의 최초 배포는 별도 작업이다. `DOLPIN_WEB_URL`은 실행 중인 이 Next.js 앱의 origin이어야 한다. 실기기는 접근 가능한 HTTPS 주소를 사용한다. 로컬 DB에는 migration 027을 적용해 검증했으며 원격 반영은 하지 않았다.
+새 공개 웹 사이트의 최초 배포는 별도 작업이다. `DOLPIN_WEB_URL`은 실행 중인 이 Next.js 앱의 origin이어야 한다. 실기기는 접근 가능한 HTTPS 주소를 사용한다. 원격 반영과 실제 PG 승인은 별도 검증이 필요하다.
 
 ## 동작
 
@@ -39,9 +41,9 @@ supabase functions deploy toss-payment
 
 웹 결제 페이지는 URL fragment의 예약 전용 토큰을 sessionStorage에 옮기고 주소에서 지운다. 토스 인증 복귀 후 자동으로 서버 승인을 요청한다. 서버는 DB 금액과 토스의 orderId·paymentKey·통화·완료 상태를 확인한다. 동일 주문을 먼저 조회하고 같은 멱등키로 승인하여, 네트워크 장애 뒤 재시도에서 이미 승인된 결제를 재사용한다. DB의 paid 전환과 이벤트 기록은 한 번만 발생한다.
 
-승인 결과가 불확실한 예약은 재고를 풀지 않는다. 같은 결과 화면에서 재확인한다. 결과 화면을 잃었거나 장기 미확정 건은 토스 주문 조회와 DB를 대조하는 운영 복구가 필요하다. 자동 webhook/주기적 reconciliation은 이번 범위에 포함하지 않았다.
+승인 결과가 불확실한 예약은 재고를 풀지 않는다. 같은 결과 화면에서 재확인하며, 장기 미확정 건은 rental-recovery의 결제사 조회와 DB 대조로 복구한다. 주기적 복구 배포 조건과 검증 범위는 [QA](qa.md)를 따른다.
 
-기존 Flutter의 PortOne 결제·환불·정산 함수는 유지한다. 새 토스 결제를 기존 PortOne 환불/정산 함수로 처리하면 안 된다. **토스 환불·보증금 반환·정산 자동화는 아직 연결되지 않았다.**
+서버의 PortOne 결제·환불·정산 호환 함수는 유지한다. 토스 환불·보증금 반환은 전용 rental-payment 경로로 처리하며 PortOne 함수와 혼용하지 않는다. 자동 대여료 지급은 제공하지 않는다. Flutter 클라이언트는 legacy/flutter에 보관한다.
 
 ## 검증
 
@@ -65,6 +67,6 @@ RN·웹 계정 화면에 카카오와 네이버를 추가했다. 카카오는 Su
 - migration 028은 이메일·전화번호 미동의 계정도 **Auth가 저장한** 카카오/네이버 identity가 있을 때 프로필을 생성하게 한다. 사용자 수정 가능한 metadata를 근거로 허용하지 않고, 연락처·본인확인 상태도 만들어내지 않는다. 실제 PostgreSQL에서 정상 identity와 metadata 위조 거절을 검증했다.
 - 실제 네이버·카카오 인증 성공/복귀는 키 미설정으로 미검증. 네이버 커스텀 provider 등록에는 해당 기능을 지원하는 Supabase Auth 버전이 필요하다.
 
-실행 확인: iPhone 17e / iOS 26.3의 Expo Go에서 최신 RN 앱을 실행하고 서버의 상품 목록·가격 표시를 확인했다. Expo Go에서 화면 실행이 된다는 것과 `dolpin://` OAuth 복귀를 지원하는 development build 검증은 별개다.
+현재 iOS 실행은 [전용 RN Release 앱](ios-runtime.md)을 사용한다. 과거 Expo Go 실행 기록은 현재의 크래시·OAuth 복귀 검증을 대체하지 않는다.
 
 기준: [카카오 Supabase 연동](https://supabase.com/docs/guides/auth/social-login/auth-kakao), [커스텀 제공자](https://supabase.com/docs/guides/auth/custom-oauth-providers), [네이버 OIDC](https://developers.naver.com/docs/login/devguide/devguide.md).

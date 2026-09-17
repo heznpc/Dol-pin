@@ -1,5 +1,7 @@
 # Reservation Escrow State Machine
 
+> 이 문서는 보존 중인 PortOne 서버 호환 경로의 설계입니다. Flutter 클라이언트는 `legacy/flutter/`로 이동했습니다. 현행 RN·웹 거래 검증은 [QA](qa.md)를 기준으로 합니다.
+
 > Status: v1 (KRW only) — 2026-05-29
 >
 > KRW launch only. Xendit / Stripe gateways still stubbed; their refund

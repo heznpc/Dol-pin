@@ -1,5 +1,9 @@
 # Legacy audit — 2026-09-09
 
+2026-09-17 경로 정리: 아래 `lib/`, `test/`, `ios/`, `android/` 경로의 Flutter
+파일은 현재 `legacy/flutter/` 아래에 있다. 이 표는 당시 감사 기록이며 현행 앱의
+기능·CI 상태는 루트 README와 `docs/backend-operations.md`를 기준으로 확인한다.
+
 정적 코드 감사. IMPLEMENTED는 코드 존재를 뜻하며 실서비스 실행 성공을 뜻하지
 않는다. 원격 schema·PG 계정·운영 데이터는 미확인이다. BROKEN은 코드상 잘못된
 경로가 발견됐다는 뜻이며 런타임 재현 여부를 별도 표기한다.

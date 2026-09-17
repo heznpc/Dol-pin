@@ -1,8 +1,12 @@
 # dol-pin Ops Runbook
 
-This runbook covers the parts of the MVP that cannot be safely hidden behind
-the Flutter client: release checks, Edge Function secrets, PortOne reconciliation,
-and manual dispute resolution.
+The active clients are React Native + Expo (`apps/mobile`) and Next.js
+(`apps/web`). Flutter is archived under `legacy/flutter` and is not a release target.
+
+Current Toss rental-payment and recovery deployment/QA is described in
+[QA](qa.md) and [OAuth/Toss setup](oauth-toss-setup.md). The PortOne and dispute
+sections below apply to the preserved server compatibility path; they are not
+connected to the current `/ops` UI.
 
 ## Local release preflight
 
@@ -12,19 +16,18 @@ Run the structure-only preflight in local development:
 node scripts/release-preflight.mjs --structure-only
 ```
 
-Run the full preflight before staging or production deployment:
+For a full preflight, configure client public values in
+`apps/mobile/.env.local` and `apps/web/.env.local`. Configure server/operator
+values from `.env.example` in `.env`, with Edge overrides in
+`supabase/functions/.env`. Process environment values take precedence.
 
 ```bash
-SUPABASE_URL="https://<project-ref>.supabase.co" \
-SUPABASE_ANON_KEY="<anon-key>" \
-SUPABASE_SERVICE_ROLE_KEY="<service-role-key>" \
-PORTONE_IMP_CODE="<merchant-code>" \
-PORTONE_IMP_KEY="<rest-api-key>" \
-PORTONE_IMP_SECRET="<rest-api-secret>" \
-DOLPIN_ADMIN_ACTION_KEY="<32-plus-character-random-secret>" \
-SENTRY_DSN="<dsn>" \
 node scripts/release-preflight.mjs
 ```
+
+This checks configuration and source structure, including the preserved PortOne
+server functions. Actual provider approval/refund and deployment recovery still
+require the runtime gates in [QA](qa.md).
 
 The script prints variable names only. It must not print secret values.
 
@@ -33,6 +36,9 @@ The script prints variable names only. It must not print secret values.
 ```bash
 supabase link --project-ref <project-ref>
 supabase db push
+supabase functions deploy toss-payment
+supabase functions deploy rental-payment
+supabase functions deploy rental-recovery
 supabase functions deploy verify-payment
 supabase functions deploy refund-payment
 supabase functions deploy settle-reservation
@@ -84,8 +90,8 @@ provider still shows no matching refund.
 
 ## Manual dispute resolution
 
-The Flutter app opens a dispute, but operators resolve it through the
-secret-gated Edge Function.
+The preserved PortOne path resolves existing disputes through the
+secret-gated Edge Function. This CLI operates on that compatibility contract.
 
 Dry run first:
 
@@ -116,19 +122,15 @@ only for a genuinely different operator decision.
 
 ## iOS lifecycle gate
 
-The simulator lifecycle gate is:
+Use the standalone RN Release app and explicitly select the simulator:
 
 ```bash
-IOS_OWNED_DEVICE="iPhone 17" \
-/Volumes/DevStore/Harness/bin/ios-owned \
-  --workspace /Users/ren/IdeaProjects/APP/dol-pin/ios/Runner.xcworkspace \
-  --scheme Runner \
-  --bundle-id com.dolda.dolda \
-  --device "iPhone 17" \
-  --action screenshot \
-  --shot /tmp/dol-pin-ios-owned.png
-
-xcrun simctl list devices | grep Booted
+xcrun simctl list devices available
+npm run ios:build -- <SIMULATOR_UDID>
+npm run qa:ios -- <SIMULATOR_UDID>
 ```
 
-The final command must print nothing.
+`qa:ios` verifies five cold launches and leaves the app running on that device.
+Inspect rendered UI and navigation as described in [iOS runtime](ios-runtime.md).
+Do not shut down or delete simulators owned by other tasks. The archived Flutter
+workspace is not part of this gate.

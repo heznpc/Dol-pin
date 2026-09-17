@@ -1,5 +1,7 @@
 # Rewrite verification
 
+> 아래는 날짜별 검증 이력입니다. 2026-09-17부터 Flutter는 `legacy/flutter/`에 보관하고 현행 CI에서 제외합니다. 과거 Flutter 검사 기록은 현행 앱 검증을 뜻하지 않습니다.
+
 ## 2026-09-09 — 착수
 
 - 사용자 승인 조건 네 가지를 `rewrite-plan.md`에 명시.
@@ -132,3 +134,12 @@ migration 026–027은 Auth가 확인한 이메일 또는 전화번호로 프로
 만들어 프로필 생성·재시도·미인증 거부·전화번호 위조 차단·허용 필드 수정을
 검증했다. 이것은 Google/Apple 로그인·콜백의 실제 동작 증거가 아니다.
 OAuth 제공자 설정과 준비된 토스페이먼츠 키 위치/연동 방식 확인이 남아 있다.
+
+## 2026-09-17 — Flutter 보관 분리와 현행 실행 경로 정리
+
+- 기존 Flutter 소스·테스트·iOS/Android 프로젝트·SDK 설정을 `legacy/flutter/`로 이동했다. 기존 파일 내용은 보존하고 보관 직전 커밋을 기록했다. 공통 `supabase/` 서버와 PortOne 호환 처리는 유지했다.
+- 루트 Node SDK, npm 실행 안내, CI, Dependabot과 release preflight를 RN·Next.js 기준으로 정리했다. 과거 Flutter 문서는 당시 기록임을 표시했다.
+- iOS 재빌드 중 CocoaPods의 호스트 stub 컴파일이 별도 Command Line Tools의 macOS 27 SDK를 선택해 Xcode 링커와 충돌했다. Pod 설치에 선택된 Xcode의 macOS SDK를 명시한 후 빌드 성공을 확인했다.
+- RN/공통 및 웹 TypeScript, Next.js production build, 전체 Edge Function 타입 검사, Edge 테스트 6개와 복구·모바일 오류·이메일 입력 테스트 8개가 통과했다. release preflight 구조 검사와 변경한 YAML 구문 검사도 통과했다.
+- 현재 소스에서 전용 RN iOS Release 앱을 다시 빌드했다. iPhone 17e / iOS 26.3.1에서 5회 연속 시작 및 매회 20초 생존 검사를 통과했다. 실제 로컬 Supabase 상품 목록·이미지 표시, 계정의 이메일 로그인 화면 이동과 탐색 복귀를 확인했다. 앱은 탐색 화면에 켜 두었다.
+- 위 결과는 로컬 실행 경로의 검증이다. 실제 PG·외부 OAuth·운영 배포 검증 범위를 추가한 것은 아니다.

@@ -15,8 +15,10 @@ npm run qa:ios -- <SIMULATOR_UDID>
 Xcode CLI와 CocoaPods가 필요하다. 최초 빌드는 React Native 및 Expo 네이티브
 의존성을 내려받으므로 시간이 걸린다. `ios:build`는 Expo prebuild, CocoaPods,
 Release simulator 빌드를 순서대로 수행한다. 생성된 `apps/mobile/ios`는 추적하지
-않으며 설정의 원본은 `apps/mobile/app.json`이다. 기존 루트 `ios/`는 Flutter 코드다.
+않으며 설정의 원본은 `apps/mobile/app.json`이다. Flutter의 네이티브 프로젝트는 `legacy/flutter/ios/`에 보관하며 사용하지 않는다.
 CocoaPods는 반드시 생성된 iOS 디렉터리를 작업 경로로 사용한다.
+Pod 설치 중 호스트 바이너리를 만드는 스크립트에도 선택된 Xcode의 macOS SDK를
+명시한다. 별도로 설치된 Command Line Tools SDK가 더 새로워도 링커와 섞이지 않는다.
 시뮬레이터 서명은 Xcode의 ad-hoc 서명을 사용한다. `CODE_SIGNING_ALLOWED=NO`로
 끄면 SecureStore에 필요한 시뮬레이터 entitlement도 빠져 키체인 접근이 실패한다.
 앱에 배포용 entitlement를 수동 재서명하는 대신 Xcode의 생성 절차를 유지한다.

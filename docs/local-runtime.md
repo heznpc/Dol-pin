@@ -8,7 +8,7 @@ export DOLPIN_RUNTIME_ROOT=/Volumes/SSD/dol-pin-runtime
 mkdir -p "$DOLPIN_RUNTIME_ROOT"
 bash scripts/with-runtime.sh start
 bash scripts/with-runtime.sh docker info
-bash scripts/with-runtime.sh supabase start -x vector,analytics
+bash scripts/with-runtime.sh supabase start -x vector,logflare
 ```
 
 `SSD`는 실제 마운트 이름으로 바꾼다. 매번 같은 runtime root를 사용한다.
