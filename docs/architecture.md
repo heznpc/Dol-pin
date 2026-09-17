@@ -1,6 +1,9 @@
 # Dol-pin architecture
 
 상태: 목표 구조와 구현 책임. 자동 거래 QA 및 배포 조건은 `qa.md`를 따른다.
+현행 구현과 미해결 설계 결함은 [TODO](../TODO.md)와
+[코드 재검토](design-review-2026-09-18.md)를 기준으로 구분한다.
+아래 도식의 `/ops`와 웹훅 수신은 목표이며 아직 구현되지 않았다.
 
 ```text
 React Native + Expo                 Next.js
@@ -29,11 +32,15 @@ native session/camera/deep link      SSR / URL filters / web session
 
 - RPC: authenticated actor 확인, role/현재 상태/전제조건 검증, 잠금,
   원자적 상태 변경과 이벤트 기록. 외부 HTTP를 DB transaction 안에서 호출하지 않는다.
-- Edge Function: PG 재조회·취소·웹훅 검증·복구 실행. 외부 호출 전 intent를 저장한다.
-- Next.js: 페이지·세션·SSR. 독자적인 결제·취소·정산 규칙을 만들지 않는다.
+- Edge Function: PG 재조회·취소·복구 실행. 외부 호출 전 intent를 저장한다.
+  외부 결제 상태 변경 웹훅 수신·대조는 미구현이다.
+- Next.js: 페이지·세션. 현행 상품·거래 데이터는 클라이언트 Query로 조회하며,
+  서버에서 인증된 데이터를 미리 읽는 SSR 경로는 구현하지 않았다.
+  독자적인 결제·취소·정산 규칙을 만들지 않는다.
 - Service role: 제한된 내부 작업만. RLS를 우회하므로 사용자 요청의 권한을
   service role 보유 여부로 대체하지 않는다.
-- `/ops`: 관리자 사용자 신원·권한을 검증한 command만 실행. 범용 상태 UPDATE 금지.
+- `/ops` 목표: 관리자 사용자 신원·권한을 검증한 command만 실행. 범용 상태 UPDATE 금지.
+  현재는 서비스 키 기반 복구 CLI와 PortOne 분쟁 CLI가 있고 `/ops` 화면은 없다.
 
 ## 공유 패키지
 
@@ -52,6 +59,9 @@ UI·React hooks·platform storage·authoritative business rule은 공유 패키�
 | 모바일 화면 간 탐색 조건·미제출 예약 초안 | route 또는 필요한 Zustand store |
 | 입력 폼의 진행 중 값·validation | React Hook Form + Zod |
 | 확정 가격·권한·available actions | backend; client 값은 UX 보조만 |
+
+권한의 최종 검증은 서버에 있다. 현재 클라이언트는 상태를 읽어 버튼을 따로
+판정하며 `available actions`나 사용자용 복구 검토 상태 DTO를 서버에서 받지는 않는다.
 
 로그아웃/계정 교체 시 사용자 캐시와 초안을 지운다. 사용자별 query key를
 분리한다. Zustand의 예시를 신규 기능 요구사항으로 해석하지 않는다.
