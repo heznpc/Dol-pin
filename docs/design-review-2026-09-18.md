@@ -4,6 +4,8 @@
 
 요구사항과 작업 상태의 기준은 [루트 TODO](../TODO.md)다. 아래 수정 기준은 검토자가 제안한 해결 방향이며, 이미 구현했다는 뜻이 아니다. P1은 운영 투입 전에 해결할 결함, P2는 기능 완결성과 회귀 방지를 위해 처리할 항목이다.
 
+2026-09-22 후속: D01–D04·D07–D09·Q05의 수정 소스와 회귀 소스를 반영했다. 실행·타입 검사·DB 적용은 사용자 지시에 따라 하지 않았다. 현재 반영 범위와 남은 결함은 TODO의 09-22 표를 따른다. 아래는 초기 검토 기록이며, D05의 provider guard 누락 주장은 잘못되어 정정한다.
+
 ## 총평과 이전 판단의 수정
 
 RPC가 권한·가격·잠금·거래 상태를 책임지고 Edge가 외부 결제사를 호출하는 구성은 실용적이다. 현재 규모에서 프레임워크 교체, 서버 분리, 메시지 브로커 도입을 정당화할 근거는 찾지 못했다. 금액 검증·일관된 잠금 순서·거래 범위 배타 제약·내구성 있는 금전 작업은 유지할 가치가 있다.
@@ -58,6 +60,8 @@ Edge 응답의 안전한 오류 변환은 존재하지만 직접 DB·Auth·Stora
 
 <a id="d05"></a>
 ## D05 · P1 · 현행 거래의 분쟁 해결 경로가 닫혀 있다
+
+**09-22 정정:** 아래의 “payment_provider를 거부하지 않는다”는 판단은 틀렸다. 현행 `resolve-dispute/index.ts`는 금융 hold 이전에 `payment_provider !== 'portone'`을 거부한다. 이 방어는 이미 있었으며 이번에 새로 고쳤다고 기록하지 않는다. 현행 Toss 분쟁 접수와 종료 경로의 공백은 여전히 남는다.
 
 근거: [DB 전이](../supabase/migrations/017_reservation_state_machine.sql) 406–411행에는 disputed 전이가 있지만 현행 공통 API와 양쪽 거래 상세에는 분쟁 접수 명령이 없다. [금전 작업 종류](../supabase/migrations/030_financial_recovery.sql) 324행은 refund/settle뿐이다. 보존된 [resolve-dispute](../supabase/functions/resolve-dispute/index.ts) 150–207행은 PortOne 조회/취소를 직접 수행한다. 선택한 `payment_provider`를 해당 실행 전에 분기하거나 거부하지 않는다. `/ops` 화면도 현행 웹 경로에 없다.
 
